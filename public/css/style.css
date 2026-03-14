@@ -1,0 +1,74 @@
+:root {
+    --primary-color: #1a1a1a;
+    --accent-color: #d4af37; /* Dourado */
+    --bg-light: #f9f9f9;
+    --text-dark: #333;
+    --card-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.navbar {
+    background-color: var(--primary-color) !important;
+    border-bottom: 2px solid var(--accent-color);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent-color) !important;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--card-shadow);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #333;
+    border-color: #333;
+}
+
+.badge.bg-success {
+    background-color: #2d5a27 !important;
+}
+
+.badge.bg-danger {
+    background-color: #8b0000 !important;
+}
+
+h1, h2, h3 {
+    font-weight: 300;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.table thead {
+    background-color: #f1f1f1;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.05);
+}
+
+/* Glassmorphism subtle effect for navbar */
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(26, 26, 26, 0.95) !important;
+}
