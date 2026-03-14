@@ -31,6 +31,20 @@
                         <?= ucfirst($orcamento['status']) ?>
                     </span>
                 </p>
+                <p><strong>Pagamento:</strong> 
+                    <span class="badge bg-<?= $orcamento['status_pagamento'] == 'pago' ? 'success' : 'warning' ?>">
+                        <?= $orcamento['status_pagamento'] == 'pago' ? 'Recebido' : 'Pendente' ?>
+                    </span>
+                </p>
+                <p><strong>Forma:</strong> 
+                    <?php 
+                        $formas = ['avista' => 'À Vista', 'cartao' => 'Cartão', 'parcelado' => 'Parcelado'];
+                        echo $formas[$orcamento['forma_pagamento']] ?? $orcamento['forma_pagamento'];
+                    ?>
+                </p>
+                <?php if ($orcamento['forma_pagamento'] === 'parcelado'): ?>
+                    <p><strong>Parcelas:</strong> <?= $orcamento['numero_parcelas'] ?>x</p>
+                <?php endif; ?>
                 <p><strong>Data:</strong> <?= date('d/m/Y H:i', strtotime($orcamento['data_criacao'])) ?></p>
                 <p><strong>Total:</strong> <span class="h4 text-primary d-block mt-2">R$ <?= number_format($orcamento['total'], 2, ',', '.') ?></span></p>
                 <hr>
@@ -41,6 +55,43 @@
                 </form>
             </div>
         </div>
+
+        <?php if ($orcamento['forma_pagamento'] === 'parcelado'): ?>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Previsão do Carnê</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Parcela</th>
+                                <th>Vencimento</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $valor_parcela = $orcamento['total'] / $orcamento['numero_parcelas'];
+                            // Para o orçamento, simulamos o primeiro vencimento para 30 dias a partir de hoje
+                            $data_atual = date('Y-m-d', strtotime('+30 days'));
+                            for ($i = 1; $i <= $orcamento['numero_parcelas']; $i++): 
+                            ?>
+                                <tr>
+                                    <td><?= $i ?>ª Parcela</td>
+                                    <td><?= date('d/m/Y', strtotime($data_atual)) ?></td>
+                                    <td>R$ <?= number_format($valor_parcela, 2, ',', '.') ?></td>
+                                </tr>
+                                <?php $data_atual = date('Y-m-d', strtotime($data_atual . ' + 30 days')); ?>
+                            <?php endfor; ?>
+                        </tbody>
+                    </table>
+                    <div class="p-2 border-top">
+                        <small class="text-muted text-center d-block">Simulação baseada em aprovação para hoje.</small>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 
     <div class="col-md-8">

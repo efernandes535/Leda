@@ -5,14 +5,38 @@ namespace App\Models;
 class Venda extends Model {
     protected $table = 'vendas';
 
-    public function create($cliente_id, $total, $itens) {
+    public function create($cliente_id, $total, $itens, $forma_pagamento = 'avista', $status_pagamento = 'pago', $numero_parcelas = 1) {
         try {
             $this->db->beginTransaction();
 
-            $sqlVenda = "INSERT INTO vendas (cliente_id, total) VALUES (?, ?)";
+            $data_vencimento = null;
+            if ($forma_pagamento === 'parcelado') {
+                $data_vencimento = date('Y-m-d', strtotime('+30 days'));
+            }
+
+            $sqlVenda = "INSERT INTO vendas (cliente_id, total, forma_pagamento, status_pagamento, numero_parcelas, data_vencimento_primeira) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtVenda = $this->db->prepare($sqlVenda);
-            $stmtVenda->execute([$cliente_id, $total]);
+            $stmtVenda->execute([$cliente_id, $total, $forma_pagamento, $status_pagamento, $numero_parcelas, $data_vencimento]);
             $venda_id = $this->db->lastInsertId();
+
+            // Gerar Parcelas na tabela parcelas_venda
+            $sqlParcela = "INSERT INTO parcelas_venda (venda_id, numero_parcela, data_vencimento, valor) VALUES (?, ?, ?, ?)";
+            $stmtParcela = $this->db->prepare($sqlParcela);
+            
+            if ($forma_pagamento === 'parcelado') {
+                $valor_parcela = $total / $numero_parcelas;
+                $data_calc = $data_vencimento;
+                for ($i = 1; $i <= $numero_parcelas; $i++) {
+                    $stmtParcela->execute([$venda_id, $i, $data_calc, $valor_parcela]);
+                    $data_calc = date('Y-m-d', strtotime($data_calc . ' + 30 days'));
+                }
+            } else {
+                // Para à vista ou cartão, gera 1 parcela já paga ou pendente conforme status
+                $status_parc = ($status_pagamento === 'pago') ? 'pago' : 'pendente';
+                $data_pagto = ($status_parc === 'pago') ? date('Y-m-d') : null;
+                $sqlSingle = "INSERT INTO parcelas_venda (venda_id, numero_parcela, data_vencimento, valor, status, data_pagamento) VALUES (?, 1, ?, ?, ?, ?)";
+                $this->db->prepare($sqlSingle)->execute([$venda_id, date('Y-m-d'), $total, $status_parc, $data_pagto]);
+            }
 
             $sqlItem = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
             $stmtItem = $this->db->prepare($sqlItem);
@@ -85,5 +109,54 @@ class Venda extends Model {
             $this->db->rollBack();
             return false;
         }
+    }
+
+    public function getParcelas($venda_id) {
+        $sql = "SELECT * FROM parcelas_venda WHERE venda_id = ? ORDER BY numero_parcela ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$venda_id]);
+        return $stmt->fetchAll();
+    }
+
+    public function pagarParcela($parcela_id) {
+        try {
+            $this->db->beginTransaction();
+            
+            // Buscar dados da parcela e da venda
+            $sqlParc = "SELECT p.*, v.cliente_id FROM parcelas_venda p JOIN vendas v ON p.venda_id = v.id WHERE p.id = ?";
+            $stmtParc = $this->db->prepare($sqlParc);
+            $stmtParc->execute([$parcela_id]);
+            $parcela = $stmtParc->fetch();
+
+            if ($parcela && $parcela['status'] === 'pendente') {
+                // Atualizar parcela
+                $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ? WHERE id = ?";
+                $this->db->prepare($sqlUp)->execute([date('Y-m-d'), $parcela_id]);
+
+                // Verificar se todas as parcelas da venda foram pagas
+                $sqlCheck = "SELECT COUNT(*) as pendentes FROM parcelas_venda WHERE venda_id = ? AND status = 'pendente'";
+                $stmtCheck = $this->db->prepare($sqlCheck);
+                $stmtCheck->execute([$parcela['venda_id']]);
+                $result = $stmtCheck->fetch();
+
+                if ($result['pendentes'] == 0) {
+                    $this->db->prepare("UPDATE vendas SET status_pagamento = 'pago' WHERE id = ?")->execute([$parcela['venda_id']]);
+                }
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function getVendaIdByParcela($parcela_id) {
+        $sql = "SELECT venda_id FROM parcelas_venda WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$parcela_id]);
+        $result = $stmt->fetch();
+        return $result ? $result['venda_id'] : null;
     }
 }

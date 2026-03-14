@@ -23,6 +23,28 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Previsão de Pagamento</label>
+                        <select name="forma_pagamento" id="forma_pagamento" class="form-select">
+                            <option value="avista">À Vista (Dinheiro/Pix)</option>
+                            <option value="cartao">Cartão (Débito/Crédito)</option>
+                            <option value="parcelado">Parcelado / Carne</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 d-none" id="div-parcelas">
+                        <label class="form-label">Número de Parcelas</label>
+                        <input type="number" name="numero_parcelas" class="form-control" value="1" min="1" max="12">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status Pretendido</label>
+                        <select name="status_pagamento" class="form-select">
+                            <option value="pago">Já Pago (na aprovação)</option>
+                            <option value="pendente">Pendente / Em Aberto</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,6 +119,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         totalSpan.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+
+    // Lógica para mostrar parcelas
+    const selectForma = document.getElementById('forma_pagamento');
+    const divParcelas = document.getElementById('div-parcelas');
+    if (selectForma) {
+        selectForma.addEventListener('change', function() {
+            if (this.value === 'parcelado') {
+                divParcelas.classList.remove('d-none');
+            } else {
+                divParcelas.classList.add('d-none');
+            }
+        });
     }
 
     btnAdd.addEventListener('click', function() {

@@ -21,13 +21,15 @@
                         <th>Data</th>
                         <th>Cliente</th>
                         <th>Total</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($vendas)): ?>
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Nenhuma venda registrada.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">Nenhuma venda registrada.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($vendas as $v): ?>
@@ -36,6 +38,17 @@
                                 <td><?= date('d/m/Y H:i', strtotime($v['data_venda'])) ?></td>
                                 <td><?= $v['cliente_nome'] ?? 'Cliente Avulso' ?></td>
                                 <td>R$ <?= number_format($v['total'], 2, ',', '.') ?></td>
+                                <td>
+                                    <?php 
+                                        $formas = ['avista' => 'À Vista', 'cartao' => 'Cartão', 'parcelado' => 'Parcelado'];
+                                        echo $formas[$v['forma_pagamento']] ?? $v['forma_pagamento'];
+                                    ?>
+                                </td>
+                                <td>
+                                    <span class="badge bg-<?= $v['status_pagamento'] == 'pago' ? 'success' : 'warning' ?>">
+                                        <?= ucfirst($v['status_pagamento']) ?>
+                                    </span>
+                                </td>
                                 <td>
                                     <a href="<?= URL_BASE ?>/vendas/detalhes/<?= $v['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Ver Detalhes">
                                         <i class="bi bi-eye"></i>

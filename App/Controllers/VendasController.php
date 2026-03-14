@@ -57,8 +57,12 @@ class VendasController extends Controller {
                 }
             }
 
+            $forma_pagamento = $_POST['forma_pagamento'] ?? 'avista';
+            $status_pagamento = $_POST['status_pagamento'] ?? 'pago';
+            $numero_parcelas = $_POST['numero_parcelas'] ?? 1;
+
             try {
-                if ($this->vendaModel->create($cliente_id, $total, $itens)) {
+                if ($this->vendaModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
                     $_SESSION['success'] = "Venda finalizada com sucesso!";
                     $this->redirect('/vendas');
                 }
@@ -72,16 +76,37 @@ class VendasController extends Controller {
     public function detalhes($id) {
         $venda = $this->vendaModel->find($id);
         $itens = $this->vendaModel->getItens($id);
+        $parcelas = $this->vendaModel->getParcelas($id);
         
         $this->view('vendas/detalhes', [
             'title' => 'Detalhes da Venda #' . $id,
             'venda' => $venda,
-            'itens' => $itens
+            'itens' => $itens,
+            'parcelas' => $parcelas
         ]);
     }
 
     public function excluir($id) {
         $this->vendaModel->delete($id);
         $this->redirect('/vendas');
+    }
+
+    public function pagarParcela($id) {
+        try {
+            if ($this->vendaModel->pagarParcela($id)) {
+                $_SESSION['success'] = "Pagamento da parcela registrado com sucesso!";
+            }
+        } catch (\Exception $e) {
+            $_SESSION['error'] = "Erro: " . $e->getMessage();
+        }
+        
+        // Redirecionar de volta para os detalhes da venda
+        $venda_id = $this->vendaModel->getVendaIdByParcela($id);
+        
+        if ($venda_id) {
+            $this->redirect('/vendas/detalhes/' . $venda_id);
+        } else {
+            $this->redirect('/vendas');
+        }
     }
 }

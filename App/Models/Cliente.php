@@ -19,7 +19,10 @@ class Cliente extends Model {
     }
 
     public function getSaldoDevedor($id) {
-        $sql = "SELECT SUM(total) as total_pendente FROM vendas WHERE cliente_id = ? AND status_pagamento = 'pendente'";
+        $sql = "SELECT SUM(p.valor) as total_pendente 
+                FROM parcelas_venda p 
+                JOIN vendas v ON p.venda_id = v.id 
+                WHERE v.cliente_id = ? AND p.status = 'pendente'";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch()['total_pendente'] ?? 0;

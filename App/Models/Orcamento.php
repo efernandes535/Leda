@@ -5,13 +5,13 @@ namespace App\Models;
 class Orcamento extends Model {
     protected $table = 'orcamentos';
 
-    public function create($cliente_id, $total, $itens) {
+    public function create($cliente_id, $total, $itens, $forma_pagamento = 'avista', $status_pagamento = 'pago', $numero_parcelas = 1) {
         try {
             $this->db->beginTransaction();
 
-            $sqlOrc = "INSERT INTO orcamentos (cliente_id, total, status) VALUES (?, ?, 'pendente')";
+            $sqlOrc = "INSERT INTO orcamentos (cliente_id, total, status, forma_pagamento, status_pagamento, numero_parcelas) VALUES (?, ?, 'pendente', ?, ?, ?)";
             $stmtOrc = $this->db->prepare($sqlOrc);
-            $stmtOrc->execute([$cliente_id, $total]);
+            $stmtOrc->execute([$cliente_id, $total, $forma_pagamento, $status_pagamento, $numero_parcelas]);
             $orcamento_id = $this->db->lastInsertId();
 
             $sqlItem = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";

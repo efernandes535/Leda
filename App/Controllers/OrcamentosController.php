@@ -58,7 +58,11 @@ class OrcamentosController extends Controller {
                 }
             }
 
-            if ($this->orcamentoModel->create($cliente_id, $total, $itens)) {
+            $forma_pagamento = $_POST['forma_pagamento'] ?? 'avista';
+            $status_pagamento = $_POST['status_pagamento'] ?? 'pago';
+            $numero_parcelas = $_POST['numero_parcelas'] ?? 1;
+
+            if ($this->orcamentoModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
                 $this->redirect('/orcamentos');
             }
         }
@@ -82,7 +86,14 @@ class OrcamentosController extends Controller {
             
             $vendaModel = new Venda();
             try {
-                $vendaModel->create($orcamento['cliente_id'], $orcamento['total'], $itens);
+                $vendaModel->create(
+                    $orcamento['cliente_id'], 
+                    $orcamento['total'], 
+                    $itens, 
+                    $orcamento['forma_pagamento'], 
+                    $orcamento['status_pagamento'],
+                    $orcamento['numero_parcelas']
+                );
                 $this->orcamentoModel->updateStatus($id, 'aprovado');
                 $_SESSION['success'] = "Orçamento aprovado e venda gerada!";
             } catch (\Exception $e) {
