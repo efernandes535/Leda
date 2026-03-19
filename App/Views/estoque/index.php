@@ -18,6 +18,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
+                        <th>Ref.</th>
                         <th>Nome</th>
                         <th>Categoria</th>
                         <th>Preço Venda</th>
@@ -35,6 +36,7 @@
                         <?php foreach ($produtos as $p): ?>
                             <tr>
                                 <td><?= $p['id'] ?></td>
+                                <td><small class="text-muted"><?= $p['sku'] ?: '-' ?></small></td>
                                 <td><?= $p['nome'] ?></td>
                                 <td><?= $p['categoria_nome'] ?? 'Sem categoria' ?></td>
                                 <td>R$ <?= number_format($p['preco_venda'], 2, ',', '.') ?></td>

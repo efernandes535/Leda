@@ -25,6 +25,9 @@
                     <a class="nav-link" href="<?= URL_BASE ?>/estoque">Estoque</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<?= URL_BASE ?>/entradas">Entradas</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<?= URL_BASE ?>/categorias">Categorias</a>
                 </li>
                 <li class="nav-item">

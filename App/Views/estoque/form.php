@@ -14,9 +14,13 @@
             <?php endif; ?>
             
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-3">
+                    <label class="form-label">Referência (SKU)</label>
+                    <input type="text" name="sku" class="form-control" placeholder="Ex: PERF-001" value="<?= $produto['sku'] ?? '' ?>">
+                </div>
+                <div class="col-md-3">
                     <label class="form-label">Nome do Produto</label>
-                    <input type="text" name="nome" class="form-control" required placeholder="Ex: Martelo 20mm" value="<?= $produto['nome'] ?? '' ?>">
+                    <input type="text" name="nome" class="form-control" required placeholder="Ex: Good Girl" value="<?= $produto['nome'] ?? '' ?>">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Categoria</label>

@@ -6,8 +6,8 @@ class Produto extends Model {
     protected $table = 'produtos';
 
     public function create($data) {
-        $sql = "INSERT INTO produtos (categoria_id, nome, descricao, preco_compra, preco_venda, quantidade, estoque_minimo) 
-                VALUES (:categoria_id, :nome, :descricao, :preco_compra, :preco_venda, :quantidade, :estoque_minimo)";
+        $sql = "INSERT INTO produtos (categoria_id, sku, nome, descricao, preco_compra, preco_venda, quantidade, estoque_minimo) 
+                VALUES (:categoria_id, :sku, :nome, :descricao, :preco_compra, :preco_venda, :quantidade, :estoque_minimo)";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($data);
@@ -16,6 +16,7 @@ class Produto extends Model {
     public function update($id, $data) {
         $sql = "UPDATE produtos SET 
                 categoria_id = :categoria_id, 
+                sku = :sku, 
                 nome = :nome, 
                 descricao = :descricao, 
                 preco_compra = :preco_compra, 

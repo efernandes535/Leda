@@ -13,6 +13,10 @@ abstract class Model {
         $this->db = Database::getConnection();
     }
 
+    public function getDb() {
+        return $this->db;
+    }
+
     public function all() {
         $sql = "SELECT * FROM {$this->table} ORDER BY id DESC";
         $stmt = $this->db->query($sql);

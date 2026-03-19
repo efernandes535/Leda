@@ -45,6 +45,7 @@ class EstoqueController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data = [
                 'categoria_id' => $_POST['categoria_id'] ?: null,
+                'sku' => $_POST['sku'] ?? '',
                 'nome' => $_POST['nome'],
                 'descricao' => $_POST['descricao'],
                 'preco_compra' => $_POST['preco_compra'],
