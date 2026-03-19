@@ -16,8 +16,33 @@ spl_autoload_register(function ($class) {
 $url = $_GET['url'] ?? 'home';
 $url = explode('/', filter_var(rtrim($url, '/'), FILTER_SANITIZE_URL));
 
-$controllerName = 'App\\Controllers\\' . ucfirst($url[0]) . 'Controller';
-$methodName = $url[1] ?? 'index';
+// Iniciar sessão para verificar login
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Rotas públicas
+$publicRoutes = ['login', 'autenticar'];
+
+if (!isset($_SESSION['usuario_id']) && !in_array($url[0], $publicRoutes)) {
+    header("Location: " . URL_BASE . "/login");
+    exit;
+}
+
+// Mapa de controladores especiais
+if ($url[0] === 'login') {
+    $controllerName = 'App\\Controllers\\AuthController';
+    $methodName = 'login';
+} elseif ($url[0] === 'autenticar') {
+    $controllerName = 'App\\Controllers\\AuthController';
+    $methodName = 'autenticar';
+} elseif ($url[0] === 'logout') {
+    $controllerName = 'App\\Controllers\\AuthController';
+    $methodName = 'logout';
+} else {
+    $controllerName = 'App\\Controllers\\' . ucfirst($url[0]) . 'Controller';
+    $methodName = $url[1] ?? 'index';
+}
 
 if (class_exists($controllerName)) {
     $controller = new $controllerName();

@@ -40,6 +40,16 @@
                     <a class="nav-link" href="<?= URL_BASE ?>/orcamentos">Orçamentos</a>
                 </li>
             </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i> <?= $_SESSION['usuario_nome'] ?? 'Usuário' ?>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item text-danger" href="<?= URL_BASE ?>/logout"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+                    </ul>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
