@@ -12,9 +12,20 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Capturar a URL e processar a rota
-$url = $_GET['url'] ?? 'home';
-$url = explode('/', filter_var(rtrim($url, '/'), FILTER_SANITIZE_URL));
+// Capturar a URL de forma robusta, suportando Apache (.htaccess) e Servidor embutido do PHP (php -S)
+$routeParam = $_GET['url'] ?? '';
+
+if (empty($routeParam)) {
+    // Detectar rota a partir da REQUEST_URI se for acesso direto sem parâmetro ?url=
+    $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+    $routeParam = str_replace($scriptDir, '', $requestUri);
+}
+
+$url = explode('/', filter_var(trim($routeParam, '/'), FILTER_SANITIZE_URL));
+if (empty($url[0])) {
+    $url[0] = 'home';
+}
 
 // Iniciar sessão para verificar login
 if (session_status() === PHP_SESSION_NONE) {
