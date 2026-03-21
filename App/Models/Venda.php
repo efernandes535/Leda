@@ -68,6 +68,16 @@ class Venda extends Model {
         }
     }
 
+    public function findWithCliente($id) {
+        $sql = "SELECT v.*, c.nome as cliente_nome 
+                FROM vendas v 
+                LEFT JOIN clientes c ON v.cliente_id = c.id 
+                WHERE v.id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
     public function getFullVendas() {
         $sql = "SELECT v.*, c.nome as cliente_nome 
                 FROM vendas v 

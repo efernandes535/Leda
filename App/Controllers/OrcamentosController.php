@@ -115,7 +115,7 @@ class OrcamentosController extends Controller {
     }
 
     public function recibo($id) {
-        $orcamento = $this->orcamentoModel->find($id);
+        $orcamento = $this->orcamentoModel->findWithCliente($id);
         $itens = $this->orcamentoModel->getItens($id);
         
         $this->view('orcamentos/recibo', [

@@ -110,7 +110,7 @@ class VendasController extends Controller {
         }
     }
     public function recibo($id) {
-        $venda = $this->vendaModel->find($id);
+        $venda = $this->vendaModel->findWithCliente($id);
         $itens = $this->vendaModel->getItens($id);
         $parcelas = $this->vendaModel->getParcelas($id);
         

@@ -29,6 +29,16 @@ class Orcamento extends Model {
         }
     }
 
+    public function findWithCliente($id) {
+        $sql = "SELECT o.*, c.nome as cliente_nome 
+                FROM orcamentos o 
+                LEFT JOIN clientes c ON o.cliente_id = c.id 
+                WHERE o.id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
     public function getFullOrcamentos() {
         $sql = "SELECT o.*, c.nome as cliente_nome 
                 FROM orcamentos o 
