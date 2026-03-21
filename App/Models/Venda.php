@@ -159,4 +159,25 @@ class Venda extends Model {
         $result = $stmt->fetch();
         return $result ? $result['venda_id'] : null;
     }
+
+    public function getFaturamentoMes() {
+        $sql = "SELECT SUM(total) as faturamento FROM vendas WHERE DATE_FORMAT(data_venda, '%Y-%m') = DATE_FORMAT(CURRENT_DATE, '%Y-%m')";
+        $result = $this->db->query($sql)->fetch();
+        return $result['faturamento'] ?? 0;
+    }
+
+    public function getRecebiveisPendentes() {
+        $sql = "SELECT SUM(valor) as total FROM parcelas_venda WHERE status = 'pendente'";
+        $result = $this->db->query($sql)->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    public function getUltimasVendas($limit = 5) {
+        $sql = "SELECT v.*, c.nome as cliente_nome 
+                FROM vendas v 
+                LEFT JOIN clientes c ON v.cliente_id = c.id 
+                ORDER BY v.data_venda DESC 
+                LIMIT " . (int)$limit;
+        return $this->db->query($sql)->fetchAll();
+    }
 }

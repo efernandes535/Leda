@@ -37,4 +37,20 @@ class Produto extends Model {
                 ORDER BY p.id DESC";
         return $this->db->query($sql)->fetchAll();
     }
+
+    public function getBaixoEstoqueCount() {
+        $sql = "SELECT COUNT(*) as total FROM produtos WHERE quantidade <= estoque_minimo";
+        $result = $this->db->query($sql)->fetch();
+        return $result['total'] ?? 0;
+    }
+
+    public function getTopVendidos($limit = 5) {
+        $sql = "SELECT p.*, SUM(iv.quantidade) as total_vendido 
+                FROM produtos p 
+                JOIN itens_venda iv ON p.id = iv.produto_id 
+                GROUP BY p.id 
+                ORDER BY total_vendido DESC 
+                LIMIT " . (int)$limit;
+        return $this->db->query($sql)->fetchAll();
+    }
 }
