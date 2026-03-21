@@ -10,6 +10,11 @@
         </nav>
         <h1>Venda #<?= $venda['id'] ?></h1>
     </div>
+    <div class="col-auto">
+        <a href="<?= URL_BASE ?>/vendas/recibo/<?= $venda['id'] ?>" target="_blank" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Gerar Recibo / PDF
+        </a>
+    </div>
 </div>
 
     <div class="col-md-4">

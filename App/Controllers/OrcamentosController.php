@@ -113,4 +113,14 @@ class OrcamentosController extends Controller {
         }
         $this->redirect('/orcamentos');
     }
+
+    public function recibo($id) {
+        $orcamento = $this->orcamentoModel->find($id);
+        $itens = $this->orcamentoModel->getItens($id);
+        
+        $this->view('orcamentos/recibo', [
+            'orcamento' => $orcamento,
+            'itens' => $itens
+        ]);
+    }
 }

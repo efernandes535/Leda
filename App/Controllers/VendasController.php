@@ -109,4 +109,15 @@ class VendasController extends Controller {
             $this->redirect('/vendas');
         }
     }
+    public function recibo($id) {
+        $venda = $this->vendaModel->find($id);
+        $itens = $this->vendaModel->getItens($id);
+        $parcelas = $this->vendaModel->getParcelas($id);
+        
+        $this->view('vendas/recibo', [
+            'venda' => $venda,
+            'itens' => $itens,
+            'parcelas' => $parcelas
+        ]);
+    }
 }
