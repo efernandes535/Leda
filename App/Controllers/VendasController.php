@@ -95,6 +95,8 @@ class VendasController extends Controller {
         try {
             if ($this->vendaModel->pagarParcela($id)) {
                 $_SESSION['success'] = "Pagamento da parcela registrado com sucesso!";
+            } else {
+                $_SESSION['error'] = "Esta parcela já foi paga ou não foi encontrada.";
             }
         } catch (\Exception $e) {
             $_SESSION['error'] = "Erro: " . $e->getMessage();

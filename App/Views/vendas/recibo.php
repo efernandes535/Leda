@@ -41,7 +41,8 @@
     </style>
 </head>
 <body>
-    <div class="no-print" style="text-align: center;">
+    <div class="no-print" style="text-align: center; margin-bottom: 20px;">
+        <a href="<?= URL_BASE ?>/vendas/detalhes/<?= $venda['id'] ?>" class="no-print-btn" style="background: #666; text-decoration: none; display: inline-block;">VOLTAR</a>
         <button onclick="window.print()" class="no-print-btn">IMPRIMIR / SALVAR PDF</button>
         <p style="font-size: 12px; color: #777;">Dica: Selecione "Salvar como PDF" no destino da impressora.</p>
     </div>

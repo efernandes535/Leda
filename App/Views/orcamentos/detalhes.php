@@ -11,7 +11,7 @@
         <h1>Orçamento #<?= $orcamento['id'] ?></h1>
     </div>
     <div class="col-auto">
-        <a href="<?= URL_BASE ?>/orcamentos/recibo/<?= $orcamento['id'] ?>" target="_blank" class="btn btn-outline-primary me-2">
+        <a href="<?= URL_BASE ?>/orcamentos/recibo/<?= $orcamento['id'] ?>" class="btn btn-outline-primary me-2">
             <i class="bi bi-printer"></i> Gerar PDF / Orçamento
         </a>
         <?php if ($orcamento['status'] === 'pendente'): ?>

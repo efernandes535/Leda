@@ -152,10 +152,13 @@ class Venda extends Model {
                 if ($result['pendentes'] == 0) {
                     $this->db->prepare("UPDATE vendas SET status_pagamento = 'pago' WHERE id = ?")->execute([$parcela['venda_id']]);
                 }
+                
+                $this->db->commit();
+                return true;
             }
 
-            $this->db->commit();
-            return true;
+            $this->db->rollBack();
+            return false;
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;

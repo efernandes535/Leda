@@ -12,17 +12,38 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Capturar a URL de forma robusta, suportando Apache (.htaccess) e Servidor embutido do PHP (php -S)
+// Capturar a URL de forma robusta
 $routeParam = $_GET['url'] ?? '';
 
 if (empty($routeParam)) {
-    // Detectar rota a partir da REQUEST_URI se for acesso direto sem parâmetro ?url=
     $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-    $routeParam = str_replace($scriptDir, '', $requestUri);
+    $scriptName = $_SERVER['SCRIPT_NAME']; // Ex: /Leda/public/index.php
+    $scriptDir = str_replace('\\', '/', dirname($scriptName)); // Ex: /Leda/public
+    
+    // O base path é o diretório do projeto, removendo /public se houver
+    $basePath = str_replace('/public', '', $scriptDir);
+    
+    // Tentar remover o basePath do início da URI
+    if ($basePath !== '/' && strpos($requestUri, $basePath) === 0) {
+        $requestUri = substr($requestUri, strlen($basePath));
+    }
+    
+    // Remover o /public do início se ele ainda estiver lá (caso de acesso direto à pasta public)
+    if (strpos($requestUri, '/public') === 0) {
+        $requestUri = substr($requestUri, 7);
+    }
+    
+    $routeParam = $requestUri;
 }
 
+// Limpar e quebrar a URL
 $url = explode('/', filter_var(trim($routeParam, '/'), FILTER_SANITIZE_URL));
+
+// SE o primeiro elemento ainda for 'public' (caso de .htaccess na raiz passando public no parâmetro 'url')
+if (isset($url[0]) && $url[0] === 'public') {
+    array_shift($url);
+}
+
 if (empty($url[0])) {
     $url[0] = 'home';
 }
