@@ -45,6 +45,9 @@
                                     <a href="<?= URL_BASE ?>/clientes/detalhes/<?= $c['id'] ?>" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-person-vcard"></i> Ver Perfil
                                     </a>
+                                    <a href="<?= URL_BASE ?>/clientes/editar/<?= $c['id'] ?>" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

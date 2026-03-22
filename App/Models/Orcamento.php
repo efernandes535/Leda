@@ -14,11 +14,13 @@ class Orcamento extends Model {
             $stmtOrc->execute([$cliente_id, $total, $forma_pagamento, $status_pagamento, $numero_parcelas]);
             $orcamento_id = $this->db->lastInsertId();
 
-            $sqlItem = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
+            $sqlItem = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario, lote, data_validade) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtItem = $this->db->prepare($sqlItem);
 
             foreach ($itens as $item) {
-                $stmtItem->execute([$orcamento_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']]);
+                $lote = $item['lote'] ?? null;
+                $data_validade = $item['data_validade'] ?? null;
+                $stmtItem->execute([$orcamento_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario'], $lote, $data_validade]);
             }
 
             $this->db->commit();

@@ -11,6 +11,13 @@ class Cliente extends Model {
         return $stmt->execute($data);
     }
 
+    public function update($id, $data) {
+        $sql = "UPDATE clientes SET nome = :nome, email = :email, telefone = :telefone, endereco = :endereco WHERE id = :id";
+        $data['id'] = $id;
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($data);
+    }
+
     public function getHistorico($id) {
         $sql = "SELECT v.* FROM vendas v WHERE v.cliente_id = ? ORDER BY v.data_venda DESC";
         $stmt = $this->db->prepare($sql);

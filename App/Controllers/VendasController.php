@@ -26,13 +26,29 @@ class VendasController extends Controller {
         ]);
     }
 
-    public function novo() {
-        $produtos = $this->produtoModel->all();
+    public function novo($id = null) {
+        $produtos = $this->produtoModel->getWithCategoria(true);
+        foreach ($produtos as &$p) {
+            $p['lotes'] = $this->produtoModel->getLotesDisponiveis($p['id']);
+        }
         $clientes = $this->clienteModel->all();
+
+        $orcamento = null;
+        $itensOrcamento = [];
+        if ($id) {
+            $orcamentoModel = new \App\Models\Orcamento();
+            $orcamento = $orcamentoModel->find($id);
+            if ($orcamento) {
+                $itensOrcamento = $orcamentoModel->getItens($id);
+            }
+        }
+
         $this->view('vendas/form', [
             'title' => 'Nova Venda',
             'produtos' => $produtos,
-            'clientes' => $clientes
+            'clientes' => $clientes,
+            'orcamento' => $orcamento,
+            'itensPreCarregados' => $itensOrcamento
         ]);
     }
 
@@ -51,18 +67,25 @@ class VendasController extends Controller {
                     $itens[] = [
                         'produto_id' => $produtos_ids[$i],
                         'quantidade' => $quantidades[$i],
-                        'preco_unitario' => $precos[$i]
+                        'preco_unitario' => $precos[$i],
+                        'lote' => $_POST['lote'][$i] ?? null,
+                        'data_validade' => $_POST['data_validade'][$i] ?? null
                     ];
                     $total += $quantidades[$i] * $precos[$i];
                 }
             }
-
             $forma_pagamento = $_POST['forma_pagamento'] ?? 'avista';
             $status_pagamento = $_POST['status_pagamento'] ?? 'pago';
             $numero_parcelas = $_POST['numero_parcelas'] ?? 1;
 
             try {
                 if ($this->vendaModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
+                    // Se a venda veio de um orçamento, marca como aprovado
+                    if (!empty($_POST['orcamento_id'])) {
+                        $orcamentoModel = new \App\Models\Orcamento();
+                        $orcamentoModel->updateStatus($_POST['orcamento_id'], 'aprovado');
+                    }
+
                     $_SESSION['success'] = "Venda finalizada com sucesso!";
                     $this->redirect('/vendas');
                 }

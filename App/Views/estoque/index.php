@@ -23,6 +23,7 @@
                         <th>Categoria</th>
                         <th>Preço Venda</th>
                         <th>Qtd.</th>
+                        <th>Mín.</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -41,17 +42,27 @@
                                 <td><?= $p['categoria_nome'] ?? 'Sem categoria' ?></td>
                                 <td>R$ <?= number_format($p['preco_venda'], 2, ',', '.') ?></td>
                                 <td><?= $p['quantidade'] ?></td>
+                                <td><?= $p['estoque_minimo'] ?></td>
                                 <td>
-                                    <?php if ($p['quantidade'] <= $p['estoque_minimo']): ?>
+                                    <?php if ($p['ativo'] == 0): ?>
+                                        <span class="badge bg-secondary text-white">Arquivado</span>
+                                    <?php elseif ($p['quantidade'] <= $p['estoque_minimo']): ?>
                                         <span class="badge bg-danger">Baixo Estoque</span>
                                     <?php else: ?>
-                                        <span class="badge bg-success">Normal</span>
+                                        <span class="badge bg-success">Ativo</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <a href="<?= URL_BASE ?>/estoque/editar/<?= $p['id'] ?>" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <div class="btn-group">
+                                        <a href="<?= URL_BASE ?>/estoque/editar/<?= $p['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <?php if ($p['ativo'] == 1): ?>
+                                            <a href="<?= URL_BASE ?>/estoque/excluir/<?= $p['id'] ?>" class="btn btn-sm btn-outline-warning" title="Arquivar Produto" onclick="return confirm('Deseja arquivar este produto? Ele não aparecerá mais em novas vendas.')">
+                                                <i class="bi bi-archive"></i>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

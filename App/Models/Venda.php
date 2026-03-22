@@ -38,7 +38,7 @@ class Venda extends Model {
                 $this->db->prepare($sqlSingle)->execute([$venda_id, date('Y-m-d'), $total, $status_parc, $data_pagto]);
             }
 
-            $sqlItem = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
+            $sqlItem = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario, lote, data_validade) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtItem = $this->db->prepare($sqlItem);
 
             $sqlEstoque = "UPDATE produtos SET quantidade = quantidade - ? WHERE id = ?";
@@ -56,7 +56,10 @@ class Venda extends Model {
                     throw new \Exception("Estoque insuficiente para o produto: " . $produto['nome'] . " (Disponível: " . $produto['quantidade'] . ")");
                 }
 
-                $stmtItem->execute([$venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']]);
+                $lote = $item['lote'] ?? null;
+                $data_validade = $item['data_validade'] ?? null;
+
+                $stmtItem->execute([$venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario'], $lote, $data_validade]);
                 $stmtEstoque->execute([$item['quantidade'], $item['produto_id']]);
             }
 

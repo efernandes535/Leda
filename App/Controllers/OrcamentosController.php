@@ -28,7 +28,10 @@ class OrcamentosController extends Controller {
     }
 
     public function novo() {
-        $produtos = $this->produtoModel->all();
+        $produtos = $this->produtoModel->getWithCategoria(true);
+        foreach ($produtos as &$p) {
+            $p['lotes'] = $this->produtoModel->getLotesDisponiveis($p['id']);
+        }
         $clientes = $this->clienteModel->all();
         $this->view('orcamentos/form', [
             'title' => 'Novo Orçamento',
@@ -82,25 +85,13 @@ class OrcamentosController extends Controller {
     public function aprovar($id) {
         $orcamento = $this->orcamentoModel->find($id);
         if ($orcamento && $orcamento['status'] === 'pendente') {
-            $itens = $this->orcamentoModel->getItens($id);
-            
-            $vendaModel = new Venda();
-            try {
-                $vendaModel->create(
-                    $orcamento['cliente_id'], 
-                    $orcamento['total'], 
-                    $itens, 
-                    $orcamento['forma_pagamento'], 
-                    $orcamento['status_pagamento'],
-                    $orcamento['numero_parcelas']
-                );
-                $this->orcamentoModel->updateStatus($id, 'aprovado');
-                $_SESSION['success'] = "Orçamento aprovado e venda gerada!";
-            } catch (\Exception $e) {
-                $_SESSION['error'] = "Erro ao aprovar: " . $e->getMessage();
-            }
+            // Em vez de criar a venda silenciosamente, redirecionamos para o form de venda
+            // pré-carregado com os dados do orçamento para que o usuário possa escolher os lotes.
+            $this->redirect('/vendas/novo/' . $id);
+        } else {
+            $_SESSION['error'] = "Orçamento não encontrado ou já processado.";
+            $this->redirect('/orcamentos');
         }
-        $this->redirect('/orcamentos');
     }
 
     public function excluir($id) {

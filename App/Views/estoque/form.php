@@ -53,11 +53,20 @@
                     <label class="form-label">Estoque Mínimo</label>
                     <input type="number" name="estoque_minimo" class="form-control" value="<?= $produto['estoque_minimo'] ?? '5' ?>" required>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" name="ativo" value="1" id="statusAtivo" <?= (!isset($produto) || $produto['ativo'] == 1) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="statusAtivo">Produto Ativo</label>
+                    </div>
+                </div>
                 <div class="col-12 mt-4">
                     <hr>
                     <button type="submit" class="btn btn-primary"><?= isset($produto) ? 'Atualizar' : 'Salvar' ?> Produto</button>
-                    <?php if (isset($produto)): ?>
-                        <a href="<?= URL_BASE ?>/estoque/excluir/<?= $produto['id'] ?>" class="btn btn-danger float-end" onclick="return confirm('Excluir este produto?')">Excluir</a>
+                    <?php if (isset($produto) && $produto['ativo'] == 1): ?>
+                        <a href="<?= URL_BASE ?>/estoque/excluir/<?= $produto['id'] ?>" class="btn btn-outline-warning float-end" onclick="return confirm('Deseja arquivar este produto? Ele não aparecerá mais em novas vendas.')">
+                            <i class="bi bi-archive"></i> Arquivar Produto
+                        </a>
                     <?php endif; ?>
                     <a href="<?= URL_BASE ?>/estoque" class="btn btn-light">Cancelar</a>
                 </div>

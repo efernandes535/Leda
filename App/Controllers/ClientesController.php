@@ -29,8 +29,20 @@ class ClientesController extends Controller {
         $this->view('clientes/form', ['title' => 'Novo Cliente']);
     }
 
+    public function editar($id) {
+        $cliente = $this->clienteModel->find($id);
+        if (!$cliente) {
+            $this->redirect('/clientes');
+        }
+        $this->view('clientes/form', [
+            'title' => 'Editar Cliente: ' . $cliente['nome'],
+            'cliente' => $cliente
+        ]);
+    }
+
     public function salvar() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
             $data = [
                 'nome' => $_POST['nome'],
                 'email' => $_POST['email'],
@@ -38,8 +50,14 @@ class ClientesController extends Controller {
                 'endereco' => $_POST['endereco']
             ];
 
-            if ($this->clienteModel->create($data)) {
-                $this->redirect('/clientes');
+            if ($id) {
+                if ($this->clienteModel->update($id, $data)) {
+                    $this->redirect('/clientes');
+                }
+            } else {
+                if ($this->clienteModel->create($data)) {
+                    $this->redirect('/clientes');
+                }
             }
         }
     }

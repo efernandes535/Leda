@@ -51,7 +51,8 @@ class EstoqueController extends Controller {
                 'preco_compra' => $_POST['preco_compra'],
                 'preco_venda' => $_POST['preco_venda'],
                 'quantidade' => $_POST['quantidade'],
-                'estoque_minimo' => $_POST['estoque_minimo']
+                'estoque_minimo' => $_POST['estoque_minimo'],
+                'ativo' => isset($_POST['ativo']) ? (int)$_POST['ativo'] : 1
             ];
 
             if (isset($_POST['id']) && !empty($_POST['id'])) {
@@ -67,7 +68,7 @@ class EstoqueController extends Controller {
     }
 
     public function excluir($id) {
-        if ($this->produtoModel->delete($id)) {
+        if ($this->produtoModel->inativar($id)) {
             $this->redirect('/estoque');
         }
     }

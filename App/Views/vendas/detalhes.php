@@ -109,7 +109,17 @@
                         <tbody>
                             <?php foreach ($itens as $item): ?>
                                 <tr>
-                                    <td><?= $item['produto_nome'] ?></td>
+                                    <td>
+                                        <?= $item['produto_nome'] ?>
+                                        <?php if (!empty($item['lote'])): ?>
+                                            <div class="small text-muted">
+                                                Lote: <?= $item['lote'] ?> 
+                                                <?php if (!empty($item['data_validade'])): ?>
+                                                    | Val: <?= date('d/m/Y', strtotime($item['data_validade'])) ?>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= $item['quantidade'] ?></td>
                                     <td>R$ <?= number_format($item['preco_unitario'], 2, ',', '.') ?></td>
                                     <td>R$ <?= number_format($item['quantidade'] * $item['preco_unitario'], 2, ',', '.') ?></td>
