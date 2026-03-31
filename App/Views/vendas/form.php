@@ -80,6 +80,7 @@
                                         <option value="<?= $p['id'] ?>" 
                                                 data-preco="<?= $p['preco_venda'] ?>"
                                                 data-lotes='<?= json_encode($p['lotes']) ?>'
+                                                data-estoque="<?= $p['quantidade'] ?>"
                                                 <?= $itemVal['produto_id'] == $p['id'] ? 'selected' : '' ?>>
                                             <?= $p['nome'] ?> (Qtd: <?= $p['quantidade'] ?>)
                                         </option>
@@ -96,6 +97,7 @@
                             <div class="col-md-2">
                                 <label class="form-label">Qtd.</label>
                                 <input type="number" name="quantidade[]" class="form-control qtd-input" value="<?= $itemVal['quantidade'] ?>" min="1" required>
+                                <small class="stock-check-label d-block mt-1"></small>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Preço Unit.</label>
@@ -131,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('itens-container');
     const btnAdd = document.getElementById('add-item');
     const totalSpan = document.getElementById('valor-total');
+    const btnSubmit = document.querySelector('button[type="submit"]');
 
     function calculateTotal() {
         let total = 0;
@@ -142,6 +145,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         totalSpan.textContent = 'R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+    }
+
+    function checkStock(row) {
+        const select = row.querySelector('.produto-select');
+        const qtdInput = row.querySelector('.qtd-input');
+        const label = row.querySelector('.stock-check-label');
+        
+        const option = select.selectedOptions[0];
+        if (!option || !option.value) {
+            label.textContent = '';
+            return true;
+        }
+
+        const estoque = parseInt(option.dataset.estoque) || 0;
+        const qtdSolicitada = parseInt(qtdInput.value) || 0;
+
+        if (qtdSolicitada > estoque) {
+            label.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Insuficiente (Apenas ${estoque})</span>`;
+            qtdInput.classList.add('is-invalid');
+            return false;
+        } else {
+            label.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill"></i> Disponível (${estoque})</span>`;
+            qtdInput.classList.remove('is-invalid');
+            return true;
+        }
+    }
+
+    function validateAll() {
+        let allOk = true;
+        document.querySelectorAll('.item-row').forEach(row => {
+            if (!checkStock(row)) allOk = false;
+        });
+        btnSubmit.disabled = !allOk;
     }
 
     // Lógica para mostrar parcelas
@@ -158,11 +194,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnAdd.addEventListener('click', function() {
-        const row = document.querySelector('.item-row').cloneNode(true);
+        const firstRow = document.querySelector('.item-row');
+        const row = firstRow.cloneNode(true);
         row.querySelectorAll('input').forEach(input => input.value = '');
+        row.querySelectorAll('select').forEach(select => {
+            select.selectedIndex = 0;
+            if (select.classList.contains('lote-select')) {
+                select.innerHTML = '<option value="">Selecione o Lote...</option>';
+            }
+        });
         row.querySelector('.qtd-input').value = 1;
-        row.querySelector('.lote-select').innerHTML = '<option value="">Padrão</option>';
+        row.querySelector('.stock-check-label').textContent = '';
+        row.querySelector('.qtd-input').classList.remove('is-invalid');
         container.appendChild(row);
+        validateAll();
     });
 
     container.addEventListener('click', function(e) {
@@ -170,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (document.querySelectorAll('.item-row').length > 1) {
                 e.target.closest('.item-row').remove();
                 calculateTotal();
+                validateAll();
             }
         }
     });
@@ -178,6 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('produto-select')) {
             updateLoteSelect(e.target);
             calculateTotal();
+            validateAll();
         }
 
         if (e.target.classList.contains('lote-select')) {
@@ -188,6 +235,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (e.target.classList.contains('qtd-input') || e.target.classList.contains('preco-input')) {
             calculateTotal();
+            validateAll();
+        }
+    });
+
+    // Validar ao digitar para feedback imediato
+    container.addEventListener('input', function(e) {
+        if (e.target.classList.contains('qtd-input')) {
+            const row = e.target.closest('.item-row');
+            checkStock(row);
+            validateAll();
         }
     });
 
@@ -215,13 +272,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Inicializar linhas existentes (importadas de orçamento)
+    // Inicializar linhas existentes
     document.querySelectorAll('.produto-select').forEach(select => {
         if (select.value) {
             updateLoteSelect(select);
         }
     });
     calculateTotal();
+    validateAll();
 });
 </script>
 

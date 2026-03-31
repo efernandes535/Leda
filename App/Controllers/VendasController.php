@@ -40,6 +40,11 @@ class VendasController extends Controller {
             $orcamento = $orcamentoModel->find($id);
             if ($orcamento) {
                 $itensOrcamento = $orcamentoModel->getItens($id);
+                // Adiciona o estoque atual de cada produto para conferência
+                foreach ($itensOrcamento as &$item) {
+                    $prod = $this->produtoModel->find($item['produto_id']);
+                    $item['estoque_atual'] = $prod['quantidade'] ?? 0;
+                }
             }
         }
 
