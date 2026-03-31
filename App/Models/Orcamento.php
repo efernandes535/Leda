@@ -31,6 +31,36 @@ class Orcamento extends Model {
         }
     }
 
+    public function update($id, $cliente_id, $total, $itens, $forma_pagamento = 'avista', $status_pagamento = 'pago', $numero_parcelas = 1) {
+        try {
+            $this->db->beginTransaction();
+
+            // Atualiza dados básicos
+            $sqlOrc = "UPDATE orcamentos SET cliente_id = ?, total = ?, forma_pagamento = ?, status_pagamento = ?, numero_parcelas = ? WHERE id = ?";
+            $stmtOrc = $this->db->prepare($sqlOrc);
+            $stmtOrc->execute([$cliente_id, $total, $forma_pagamento, $status_pagamento, $numero_parcelas, $id]);
+
+            // Remove itens antigos
+            $this->db->prepare("DELETE FROM itens_orcamento WHERE orcamento_id = ?")->execute([$id]);
+
+            // Insere novos itens
+            $sqlItem = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario, lote, data_validade) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmtItem = $this->db->prepare($sqlItem);
+
+            foreach ($itens as $item) {
+                $lote = $item['lote'] ?? null;
+                $data_validade = $item['data_validade'] ?? null;
+                $stmtItem->execute([$id, $item['produto_id'], $item['quantidade'], $item['preco_unitario'], $lote, $data_validade]);
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     public function findWithCliente($id) {
         $sql = "SELECT o.*, c.nome as cliente_nome 
                 FROM orcamentos o 

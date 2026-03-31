@@ -40,8 +40,32 @@ class OrcamentosController extends Controller {
         ]);
     }
 
+    public function editar($id) {
+        $orcamento = $this->orcamentoModel->find($id);
+        if (!$orcamento) {
+            $_SESSION['error'] = "Orçamento não encontrado.";
+            $this->redirect('/orcamentos');
+        }
+        
+        $itens = $this->orcamentoModel->getItens($id);
+        $produtos = $this->produtoModel->getWithCategoria(true);
+        foreach ($produtos as &$p) {
+            $p['lotes'] = $this->produtoModel->getLotesDisponiveis($p['id']);
+        }
+        $clientes = $this->clienteModel->all();
+
+        $this->view('orcamentos/form', [
+            'title' => 'Editar Orçamento #' . $id,
+            'orcamento' => $orcamento,
+            'itensPreCarregados' => $itens,
+            'produtos' => $produtos,
+            'clientes' => $clientes
+        ]);
+    }
+
     public function salvar() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
             $cliente_id = $_POST['cliente_id'] ?: null;
             $produtos_ids = $_POST['produto_id'];
             $quantidades = $_POST['quantidade'];
@@ -65,8 +89,16 @@ class OrcamentosController extends Controller {
             $status_pagamento = $_POST['status_pagamento'] ?? 'pago';
             $numero_parcelas = $_POST['numero_parcelas'] ?? 1;
 
-            if ($this->orcamentoModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
-                $this->redirect('/orcamentos');
+            if ($id) {
+                if ($this->orcamentoModel->update($id, $cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
+                    $_SESSION['success'] = "Orçamento atualizado com sucesso!";
+                    $this->redirect('/orcamentos');
+                }
+            } else {
+                if ($this->orcamentoModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
+                    $_SESSION['success'] = "Orçamento criado com sucesso!";
+                    $this->redirect('/orcamentos');
+                }
             }
         }
     }

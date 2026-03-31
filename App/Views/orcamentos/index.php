@@ -47,6 +47,9 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <?php if ($o['status'] === 'pendente'): ?>
+                                        <a href="<?= URL_BASE ?>/orcamentos/editar/<?= $o['id'] ?>" class="btn btn-sm btn-outline-primary" title="Editar Orçamento">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
                                         <a href="<?= URL_BASE ?>/orcamentos/aprovar/<?= $o['id'] ?>" class="btn btn-sm btn-outline-success" title="Aprovar e Gerar Venda" onclick="return confirm('Deseja aprovar este orçamento e gerar uma venda?')">
                                             <i class="bi bi-check-lg"></i>
                                         </a>
