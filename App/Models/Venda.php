@@ -152,8 +152,8 @@ class Venda extends Model {
             if ($valor_recebido === null) $valor_recebido = $valor_original;
             
             // 1. Marcar a parcela atual como paga
-            $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ? WHERE id = ?";
-            $this->db->prepare($sqlUp)->execute([$data_pagamento, $parcela_id]);
+            $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ?, valor_pago = ? WHERE id = ?";
+            $this->db->prepare($sqlUp)->execute([$data_pagamento, $valor_recebido, $parcela_id]);
             
             // 2. Lógica de Abatimento (se o valor recebido for maior)
             $excedente = $valor_recebido - $valor_original;

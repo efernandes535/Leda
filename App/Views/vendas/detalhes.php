@@ -40,6 +40,15 @@
                 <?php endif; ?>
                 <p><strong>Data:</strong> <?= date('d/m/Y H:i', strtotime($venda['data_venda'])) ?></p>
                 <p><strong>Total:</strong> <span class="h4 text-primary d-block mt-2">R$ <?= number_format($venda['total'], 2, ',', '.') ?></span></p>
+                <?php if ($venda['forma_pagamento'] === 'parcelado'): ?>
+                    <?php 
+                        $saldoDevedor = array_reduce($parcelas, function($carry, $item) {
+                            return $carry + ($item['status'] === 'pendente' ? $item['valor'] : 0);
+                        }, 0);
+                    ?>
+                    <p class="mb-0"><strong>Saldo Devedor:</strong></p>
+                    <span class="h5 text-danger d-block">R$ <?= number_format($saldoDevedor, 2, ',', '.') ?></span>
+                <?php endif; ?>
                 <hr>
                 <a href="<?= URL_BASE ?>/vendas/excluir/<?= $venda['id'] ?>" class="btn btn-danger w-100 mt-3" onclick="return confirm('Deseja realmente excluir esta venda? O estoque será estornado automaticamente.')">
                     <i class="bi bi-trash"></i> Excluir Venda
@@ -59,6 +68,7 @@
                                 <th>Parcela</th>
                                 <th>Vencimento</th>
                                 <th>Valor</th>
+                                <th>Vlr. Recebido</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,6 +77,7 @@
                                     <td><?= $p['numero_parcela'] ?>ª Parcela</td>
                                     <td><?= date('d/m/Y', strtotime($p['data_vencimento'])) ?></td>
                                     <td>R$ <?= number_format($p['valor'], 2, ',', '.') ?></td>
+                                    <td class="text-success"><?= $p['status'] === 'pago' ? 'R$ ' . number_format($p['valor_pago'], 2, ',', '.') : '-' ?></td>
                                     <td>
                                         <span class="badge bg-<?= $p['status'] === 'pago' ? 'success' : 'warning' ?>">
                                             <?= ucfirst($p['status']) ?>
