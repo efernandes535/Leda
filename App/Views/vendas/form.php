@@ -58,12 +58,17 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Itens do Pedido</h5>
-                    <?php if (isset($orcamento)): ?>
-                        <span class="badge bg-info">Importado do Orçamento #<?= $orcamento['id'] ?></span>
-                    <?php endif; ?>
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
-                        <i class="bi bi-plus-lg"></i> Adicionar Item
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <?php if (isset($orcamento)): ?>
+                            <span class="badge bg-info">Importado do Orçamento #<?= $orcamento['id'] ?></span>
+                        <?php endif; ?>
+                        <button type="button" id="btn-auto-adjust" class="btn btn-sm btn-outline-warning d-none">
+                            <i class="bi bi-magic"></i> Ajustar pelo Estoque
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                            <i class="bi bi-plus-lg"></i> Adicionar Item
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="itens-container">
@@ -183,10 +188,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function validateAll() {
         let allOk = true;
+        let anyStockError = false;
         document.querySelectorAll('.item-row').forEach(row => {
-            if (!checkStock(row)) allOk = false;
+            if (!checkStock(row)) {
+                allOk = false;
+                anyStockError = true;
+            }
         });
         btnSubmit.disabled = !allOk;
+        
+        const btnAutoAdjust = document.getElementById('btn-auto-adjust');
+        if (btnAutoAdjust) {
+            if (anyStockError) {
+                btnAutoAdjust.classList.remove('d-none');
+            } else {
+                btnAutoAdjust.classList.add('d-none');
+            }
+        }
+    }
+
+    const btnAutoAdjust = document.getElementById('btn-auto-adjust');
+    if (btnAutoAdjust) {
+        btnAutoAdjust.addEventListener('click', function() {
+            document.querySelectorAll('.item-row').forEach(row => {
+                const select = row.querySelector('.produto-select');
+                const qtdInput = row.querySelector('.qtd-input');
+                const option = select.selectedOptions[0];
+                
+                if (option && option.value) {
+                    const estoque = parseInt(option.dataset.estoque) || 0;
+                    const qtdSolicitada = parseInt(qtdInput.value) || 0;
+                    
+                    if (qtdSolicitada > estoque) {
+                        qtdInput.value = estoque;
+                    }
+                }
+            });
+            calculateTotal();
+            validateAll();
+        });
     }
 
     // Lógica para mostrar parcelas

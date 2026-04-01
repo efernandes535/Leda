@@ -73,8 +73,8 @@ class VendasController extends Controller {
                         'produto_id' => $produtos_ids[$i],
                         'quantidade' => $quantidades[$i],
                         'preco_unitario' => $precos[$i],
-                        'lote' => $_POST['lote'][$i] ?? null,
-                        'data_validade' => $_POST['data_validade'][$i] ?? null
+                        'lote' => !empty($_POST['lote'][$i]) ? $_POST['lote'][$i] : null,
+                        'data_validade' => !empty($_POST['data_validade'][$i]) ? $_POST['data_validade'][$i] : null
                     ];
                     $total += $quantidades[$i] * $precos[$i];
                 }
