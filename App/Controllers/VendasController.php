@@ -91,12 +91,14 @@ class VendasController extends Controller {
                         $orcamentoModel = new \App\Models\Orcamento();
                         $orcamentoOriginal = $orcamentoModel->find($orcamento_id);
 
-                        if ($orcamentoOriginal && isset($_POST['gerar_backorder'])) {
+                        if ($orcamentoOriginal) {
                             $itensOriginais = $orcamentoModel->getItens($orcamento_id);
                             $itensBackorder = [];
                             $totalBackorder = 0;
+                            $itensOrcamentoOriginalAtualizados = [];
+                            $totalOrcamentoOriginalAtualizado = 0;
 
-                            // Agrupar quantidades vendidas por produto_id
+                            // Agrupar quantidades vendidas por produto_id (da venda atual)
                             $qtdVendidaPorProduto = [];
                             foreach ($itens as $it) {
                                 $pid = $it['produto_id'];
@@ -108,7 +110,20 @@ class VendasController extends Controller {
                                 $qtdVendida = $qtdVendidaPorProduto[$pid] ?? 0;
                                 $saldo = $itOrig['quantidade'] - $qtdVendida;
 
-                                if ($saldo > 0) {
+                                // 1. O que foi vendido fica no Orçamento Original
+                                if ($qtdVendida > 0) {
+                                    $itensOrcamentoOriginalAtualizados[] = [
+                                        'produto_id' => $pid,
+                                        'quantidade' => $qtdVendida,
+                                        'preco_unitario' => $itOrig['preco_unitario'],
+                                        'lote' => $itOrig['lote'],
+                                        'data_validade' => $itOrig['data_validade']
+                                    ];
+                                    $totalOrcamentoOriginalAtualizado += $qtdVendida * $itOrig['preco_unitario'];
+                                }
+
+                                // 2. O que sobrou vai para o Novo Orçamento (Backorder)
+                                if ($saldo > 0 && isset($_POST['gerar_backorder'])) {
                                     $itensBackorder[] = [
                                         'produto_id' => $pid,
                                         'quantidade' => $saldo,
@@ -120,6 +135,20 @@ class VendasController extends Controller {
                                 unset($qtdVendidaPorProduto[$pid]);
                             }
 
+                            // Atualizar orçamento original com as quantidades aprovadas
+                            if (!empty($itensOrcamentoOriginalAtualizados)) {
+                                $orcamentoModel->update(
+                                    $orcamento_id,
+                                    $orcamentoOriginal['cliente_id'],
+                                    $totalOrcamentoOriginalAtualizado,
+                                    $itensOrcamentoOriginalAtualizados,
+                                    $orcamentoOriginal['forma_pagamento'],
+                                    $orcamentoOriginal['status_pagamento'],
+                                    $orcamentoOriginal['numero_parcelas']
+                                );
+                            }
+
+                            // Criar novo orçamento para o saldo
                             if (!empty($itensBackorder)) {
                                 $orcamentoModel->create(
                                     $orcamentoOriginal['cliente_id'],
@@ -166,7 +195,10 @@ class VendasController extends Controller {
 
     public function pagarParcela($id) {
         try {
-            if ($this->vendaModel->pagarParcela($id)) {
+            $data_pagamento = $_POST['data_pagamento'] ?? date('Y-m-d');
+            $valor_recebido = !empty($_POST['valor_recebido']) ? (float)str_replace(',', '.', str_replace('.', '', $_POST['valor_recebido'])) : null;
+
+            if ($this->vendaModel->pagarParcela($id, $data_pagamento, $valor_recebido)) {
                 $_SESSION['success'] = "Pagamento da parcela registrado com sucesso!";
             } else {
                 $_SESSION['error'] = "Esta parcela já foi paga ou não foi encontrada.";

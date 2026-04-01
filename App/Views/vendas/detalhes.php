@@ -74,9 +74,15 @@
                                     </td>
                                     <td>
                                         <?php if ($p['status'] === 'pendente'): ?>
-                                            <a href="<?= URL_BASE ?>/vendas/pagarParcela/<?= $p['id'] ?>" class="btn btn-sm btn-outline-success" onclick="return confirm('Confirmar o recebimento desta parcela?')">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-success btn-baixar" 
+                                                    data-id="<?= $p['id'] ?>" 
+                                                    data-valor="<?= $p['valor'] ?>"
+                                                    data-numero="<?= $p['numero_parcela'] ?>"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#modalPagamento">
                                                 <i class="bi bi-cash-stack"></i> Baixar
-                                            </a>
+                                            </button>
                                         <?php else: ?>
                                             <small class="text-muted"><?= date('d/m/Y', strtotime($p['data_pagamento'])) ?></small>
                                         <?php endif; ?>
@@ -91,6 +97,7 @@
     </div>
 
     <div class="col-md-8">
+        <!-- Itens da Venda (já existente) -->
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white">
                 <h5 class="mb-0">Itens Vendidos</h5>
@@ -132,5 +139,68 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Pagamento -->
+<div class="modal fade" id="modalPagamento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="formPagamento" method="POST" action="">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Confirmar Recebimento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-info-parcela"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Data do Recebimento</label>
+                        <input type="date" name="data_pagamento" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Valor Recebido (R$)</label>
+                        <input type="text" name="valor_recebido" id="valor_recebido" class="form-control" required>
+                        <div class="form-text text-muted">
+                            Se o valor for maior que a parcela, o saldo será abatido das últimas parcelas.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnBaixar = document.querySelectorAll('.btn-baixar');
+    const formPagamento = document.getElementById('formPagamento');
+    const modalInfo = document.getElementById('modal-info-parcela');
+    const inputValor = document.getElementById('valor_recebido');
+
+    btnBaixar.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const valor = this.getAttribute('data-valor');
+            const numero = this.getAttribute('data-numero');
+
+            formPagamento.action = '<?= URL_BASE ?>/vendas/pagarParcela/' + id;
+            modalInfo.innerHTML = `Confirmando o recebimento da <strong>${numero}ª Parcela</strong> no valor de <strong>R$ ${parseFloat(valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</strong>.`;
+            inputValor.value = parseFloat(valor).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        });
+    });
+
+    // Máscara básica para o valor
+    inputValor.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = (value / 100).toFixed(2) + '';
+        value = value.replace(".", ",");
+        value = value.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+        value = value.replace(/(\d)(\d{3}),/g, "$1.$2,");
+        e.target.value = value;
+    });
+});
+</script>
 
 <?php include '../App/Views/partials/footer.php'; ?>

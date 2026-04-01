@@ -131,37 +131,72 @@ class Venda extends Model {
         return $stmt->fetchAll();
     }
 
-    public function pagarParcela($parcela_id) {
+    public function pagarParcela($parcela_id, $data_pagamento = null, $valor_recebido = null) {
+        if (!$data_pagamento) $data_pagamento = date('Y-m-d');
+        
         try {
             $this->db->beginTransaction();
             
-            // Buscar dados da parcela e da venda
-            $sqlParc = "SELECT p.*, v.cliente_id FROM parcelas_venda p JOIN vendas v ON p.venda_id = v.id WHERE p.id = ?";
+            // Buscar dados da parcela
+            $sqlParc = "SELECT * FROM parcelas_venda WHERE id = ?";
             $stmtParc = $this->db->prepare($sqlParc);
             $stmtParc->execute([$parcela_id]);
             $parcela = $stmtParc->fetch();
-
-            if ($parcela && $parcela['status'] === 'pendente') {
-                // Atualizar parcela
-                $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ? WHERE id = ?";
-                $this->db->prepare($sqlUp)->execute([date('Y-m-d'), $parcela_id]);
-
-                // Verificar se todas as parcelas da venda foram pagas
-                $sqlCheck = "SELECT COUNT(*) as pendentes FROM parcelas_venda WHERE venda_id = ? AND status = 'pendente'";
-                $stmtCheck = $this->db->prepare($sqlCheck);
-                $stmtCheck->execute([$parcela['venda_id']]);
-                $result = $stmtCheck->fetch();
-
-                if ($result['pendentes'] == 0) {
-                    $this->db->prepare("UPDATE vendas SET status_pagamento = 'pago' WHERE id = ?")->execute([$parcela['venda_id']]);
-                }
-                
-                $this->db->commit();
-                return true;
+            
+            if (!$parcela || $parcela['status'] === 'pago') {
+                $this->db->rollBack();
+                return false;
             }
+            
+            $valor_original = $parcela['valor'];
+            if ($valor_recebido === null) $valor_recebido = $valor_original;
+            
+            // 1. Marcar a parcela atual como paga
+            $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ? WHERE id = ?";
+            $this->db->prepare($sqlUp)->execute([$data_pagamento, $parcela_id]);
+            
+            // 2. Lógica de Abatimento (se o valor recebido for maior)
+            $excedente = $valor_recebido - $valor_original;
+            
+            if ($excedente > 0) {
+                // Abater das últimas parcelas pendentes (ordem decrescente)
+                while ($excedente > 0.01) { // Usando 0.01 para evitar problemas de precisão de float
+                    $sqlLast = "SELECT * FROM parcelas_venda 
+                                WHERE venda_id = ? AND status = 'pendente' AND id != ? 
+                                ORDER BY numero_parcela DESC LIMIT 1";
+                    $stmtLast = $this->db->prepare($sqlLast);
+                    $stmtLast->execute([$parcela['venda_id'], $parcela_id]);
+                    $last = $stmtLast->fetch();
+                    
+                    if (!$last) break; // Não há mais parcelas pendentes
+                    
+                    if ($last['valor'] > $excedente) {
+                        // Abate parcial da última
+                        $novo_valor = $last['valor'] - $excedente;
+                        $sqlAbate = "UPDATE parcelas_venda SET valor = ? WHERE id = ?";
+                        $this->db->prepare($sqlAbate)->execute([$novo_valor, $last['id']]);
+                        $excedente = 0;
+                    } else {
+                        // Quita a última integralmente e continua com o que sobrou
+                        $excedente -= $last['valor'];
+                        $sqlQuita = "UPDATE parcelas_venda SET valor = 0, status = 'pago', data_pagamento = ? WHERE id = ?";
+                        $this->db->prepare($sqlQuita)->execute([$data_pagamento, $last['id']]);
+                    }
+                }
+            }
+            
+            // 3. Verificar se todas as parcelas da venda foram pagas
+            $sqlCheck = "SELECT COUNT(*) as pendentes FROM parcelas_venda WHERE venda_id = ? AND status = 'pendente'";
+            $stmtCheck = $this->db->prepare($sqlCheck);
+            $stmtCheck->execute([$parcela['venda_id']]);
+            $result = $stmtCheck->fetch();
 
-            $this->db->rollBack();
-            return false;
+            if ($result['pendentes'] == 0) {
+                $this->db->prepare("UPDATE vendas SET status_pagamento = 'pago' WHERE id = ?")->execute([$parcela['venda_id']]);
+            }
+            
+            $this->db->commit();
+            return true;
         } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
