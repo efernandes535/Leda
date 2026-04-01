@@ -120,10 +120,19 @@
     </div>
 
     <div class="row mt-4">
-        <div class="col-12 text-end">
-            <hr>
-            <a href="<?= URL_BASE ?>/vendas" class="btn btn-light me-2">Cancelar</a>
-            <button type="submit" class="btn btn-primary px-5">Finalizar Venda</button>
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div class="form-check">
+                <?php if (isset($orcamento)): ?>
+                    <input class="form-check-input" type="checkbox" name="gerar_backorder" id="gerar_backorder" value="1" checked>
+                    <label class="form-check-label" for="gerar_backorder">
+                        Gerar novo orçamento para itens pendentes (Saldo)
+                    </label>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= URL_BASE ?>/vendas" class="btn btn-light me-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-5">Finalizar Venda</button>
+            </div>
         </div>
     </div>
 </form>

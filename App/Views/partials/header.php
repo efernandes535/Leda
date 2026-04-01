@@ -63,6 +63,15 @@
         <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
 
+    <?php if (isset($_SESSION['success_backorder'])): ?>
+        <div class="alert alert-info alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> <?= $_SESSION['success_backorder'] ?>
+            <a href="<?= URL_BASE ?>/orcamentos" class="alert-link">Ver Orçamentos</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php unset($_SESSION['success_backorder']); ?>
+    <?php endif; ?>
+
     <?php if (isset($_SESSION['error'])): ?>
         <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= $_SESSION['error'] ?>

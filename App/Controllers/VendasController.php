@@ -85,10 +85,55 @@ class VendasController extends Controller {
 
             try {
                 if ($this->vendaModel->create($cliente_id, $total, $itens, $forma_pagamento, $status_pagamento, $numero_parcelas)) {
-                    // Se a venda veio de um orçamento, marca como aprovado
+                    // Lógica de Saldo de Orçamento (Backorder)
                     if (!empty($_POST['orcamento_id'])) {
+                        $orcamento_id = $_POST['orcamento_id'];
                         $orcamentoModel = new \App\Models\Orcamento();
-                        $orcamentoModel->updateStatus($_POST['orcamento_id'], 'aprovado');
+                        $orcamentoOriginal = $orcamentoModel->find($orcamento_id);
+
+                        if ($orcamentoOriginal && isset($_POST['gerar_backorder'])) {
+                            $itensOriginais = $orcamentoModel->getItens($orcamento_id);
+                            $itensBackorder = [];
+                            $totalBackorder = 0;
+
+                            // Agrupar quantidades vendidas por produto_id
+                            $qtdVendidaPorProduto = [];
+                            foreach ($itens as $it) {
+                                $pid = $it['produto_id'];
+                                $qtdVendidaPorProduto[$pid] = ($qtdVendidaPorProduto[$pid] ?? 0) + $it['quantidade'];
+                            }
+
+                            foreach ($itensOriginais as $itOrig) {
+                                $pid = $itOrig['produto_id'];
+                                $qtdVendida = $qtdVendidaPorProduto[$pid] ?? 0;
+                                $saldo = $itOrig['quantidade'] - $qtdVendida;
+
+                                if ($saldo > 0) {
+                                    $itensBackorder[] = [
+                                        'produto_id' => $pid,
+                                        'quantidade' => $saldo,
+                                        'preco_unitario' => $itOrig['preco_unitario']
+                                    ];
+                                    $totalBackorder += $saldo * $itOrig['preco_unitario'];
+                                }
+                                // Remove do mapeamento para detectar apenas o que sobrou
+                                unset($qtdVendidaPorProduto[$pid]);
+                            }
+
+                            if (!empty($itensBackorder)) {
+                                $orcamentoModel->create(
+                                    $orcamentoOriginal['cliente_id'],
+                                    $totalBackorder,
+                                    $itensBackorder,
+                                    $orcamentoOriginal['forma_pagamento'],
+                                    $orcamentoOriginal['status_pagamento'],
+                                    $orcamentoOriginal['numero_parcelas']
+                                );
+                                $_SESSION['success_backorder'] = "Um novo orçamento foi gerado com os itens pendentes.";
+                            }
+                        }
+
+                        $orcamentoModel->updateStatus($orcamento_id, 'aprovado');
                     }
 
                     $_SESSION['success'] = "Venda finalizada com sucesso!";
