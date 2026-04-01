@@ -34,8 +34,9 @@ class Venda extends Model {
                 // Para à vista ou cartão, gera 1 parcela já paga ou pendente conforme status
                 $status_parc = ($status_pagamento === 'pago') ? 'pago' : 'pendente';
                 $data_pagto = ($status_parc === 'pago') ? date('Y-m-d') : null;
-                $sqlSingle = "INSERT INTO parcelas_venda (venda_id, numero_parcela, data_vencimento, valor, status, data_pagamento) VALUES (?, 1, ?, ?, ?, ?)";
-                $this->db->prepare($sqlSingle)->execute([$venda_id, date('Y-m-d'), $total, $status_parc, $data_pagto]);
+                $valor_pago = ($status_parc === 'pago') ? $total : 0;
+                $sqlSingle = "INSERT INTO parcelas_venda (venda_id, numero_parcela, data_vencimento, valor, status, data_pagamento, valor_pago) VALUES (?, 1, ?, ?, ?, ?, ?)";
+                $this->db->prepare($sqlSingle)->execute([$venda_id, date('Y-m-d'), $total, $status_parc, $data_pagto, $valor_pago]);
             }
 
             $sqlItem = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario, lote, data_validade) VALUES (?, ?, ?, ?, ?, ?)";

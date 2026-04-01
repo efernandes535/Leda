@@ -112,22 +112,53 @@
         </div>
 
         <div class="payment-info">
-            <h3>Informações de Pagamento</h3>
-            <p><strong>Forma:</strong> 
+            <h3>Histórico de Recebimentos</h3>
+            <div style="font-size: 13px;">
                 <?php 
-                    $formas = ['avista' => 'À Vista', 'cartao' => 'Cartão', 'parcelado' => 'Parcelado'];
-                    echo $formas[$venda['forma_pagamento']] ?? $venda['forma_pagamento'];
-                ?>
-            </p>
-            <?php if ($venda['forma_pagamento'] === 'parcelado' && !empty($parcelas)): ?>
-                <p><strong>Detalhamento:</strong> <?= count($parcelas) ?> parcelas</p>
-                <div style="font-size: 13px; margin-top: 10px;">
-                    <?php foreach ($parcelas as $p): ?>
-                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 3px 0;">
-                            <span><?= $p['numero_parcela'] ?>ª Parcela (<?= date('d/m/Y', strtotime($p['data_vencimento'])) ?>)</span>
-                            <span>R$ <?= number_format($p['valor'], 2, ',', '.') ?> - <strong><?= strtoupper($p['status']) ?></strong></span>
+                $totalRecebido = 0;
+                $temPagamentos = false;
+                foreach ($parcelas as $p): 
+                    if ($p['status'] === 'pago'):
+                        $temPagamentos = true;
+                        $totalRecebido += $p['valor_pago'];
+                    ?>
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding: 5px 0;">
+                            <span>RECEBIMENTO PARCELA <?= $p['numero_parcela'] ?> (Em <?= date('d/m/Y', strtotime($p['data_pagamento'])) ?>)</span>
+                            <span>R$ <?= number_format($p['valor_pago'], 2, ',', '.') ?></span>
                         </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                
+                <?php if (!$temPagamentos): ?>
+                    <p style="color: #888;">Nenhum recebimento registrado até o momento.</p>
+                <?php else: ?>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; border-top: 1px solid #ccc; padding-top: 5px;">
+                        <span>TOTAL JÁ RECEBIDO</span>
+                        <span style="color: green;">R$ <?= number_format($totalRecebido, 2, ',', '.') ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php if ($venda['forma_pagamento'] === 'parcelado'): ?>
+                <h3 style="margin-top: 20px;">Saldo Devedor / Próximos Vencimentos</h3>
+                <div style="font-size: 13px;">
+                    <?php 
+                    $saldoDevedor = 0;
+                    foreach ($parcelas as $p): 
+                        if ($p['status'] === 'pendente'):
+                            $saldoDevedor += $p['valor'];
+                        ?>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 3px 0; color: #666;">
+                                <span><?= $p['numero_parcela'] ?>ª Parcela (Vence em <?= date('d/m/Y', strtotime($p['data_vencimento'])) ?>)</span>
+                                <span>R$ <?= number_format($p['valor'], 2, ',', '.') ?></span>
+                            </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: bold; border-top: 2px solid #333; padding-top: 8px; font-size: 16px;">
+                        <span>SALDO TOTAL EM ABERTO</span>
+                        <span style="color: #d9534f;">R$ <?= number_format($saldoDevedor, 2, ',', '.') ?></span>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
