@@ -118,12 +118,14 @@
                 $totalRecebido = 0;
                 $temPagamentos = false;
                 foreach ($parcelas as $p): 
-                    if ($p['status'] === 'pago'):
+                    if ($p['valor_pago'] > 0):
                         $temPagamentos = true;
                         $totalRecebido += $p['valor_pago'];
+                        // Se não tem data de pagamento (pago parcial), usamos a data da última atualização ou atual
+                        $dataExibicao = !empty($p['data_pagamento']) ? date('d/m/Y', strtotime($p['data_pagamento'])) : date('d/m/Y');
                     ?>
                         <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ddd; padding: 5px 0;">
-                            <span>RECEBIMENTO PARCELA <?= $p['numero_parcela'] ?> (Em <?= date('d/m/Y', strtotime($p['data_pagamento'])) ?>)</span>
+                            <span>RECEBIMENTO PARCELA <?= $p['numero_parcela'] ?> (Em <?= $dataExibicao ?>)</span>
                             <span>R$ <?= number_format($p['valor_pago'], 2, ',', '.') ?></span>
                         </div>
                     <?php endif; ?>
@@ -149,7 +151,12 @@
                             $saldoDevedor += $p['valor'];
                         ?>
                             <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 3px 0; color: #666;">
-                                <span><?= $p['numero_parcela'] ?>ª Parcela (Vence em <?= date('d/m/Y', strtotime($p['data_vencimento'])) ?>)</span>
+                                <span>
+                                    <?= $p['numero_parcela'] ?>ª Parcela (Vence em <?= date('d/m/Y', strtotime($p['data_vencimento'])) ?>)
+                                    <?php if ($p['valor_pago'] > 0): ?>
+                                        <strong style="color: #31708f;">(Pago Parcial)</strong>
+                                    <?php endif; ?>
+                                </span>
                                 <span>R$ <?= number_format($p['valor'], 2, ',', '.') ?></span>
                             </div>
                         <?php endif; ?>

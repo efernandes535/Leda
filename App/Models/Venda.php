@@ -149,17 +149,36 @@ class Venda extends Model {
                 return false;
             }
             
-            $valor_original = $parcela['valor'];
-            if ($valor_recebido === null) $valor_recebido = $valor_original;
+            $valor_original = round((float)$parcela['valor'], 2);
+            if ($valor_recebido === null) {
+                $valor_recebido = $valor_original;
+            } else {
+                $valor_recebido = round((float)$valor_recebido, 2);
+            }
             
-            // 1. Marcar a parcela atual como paga
-            $sqlUp = "UPDATE parcelas_venda SET status = 'pago', data_pagamento = ?, valor_pago = ? WHERE id = ?";
-            $this->db->prepare($sqlUp)->execute([$data_pagamento, $valor_recebido, $parcela_id]);
-            
-            // 2. Lógica de Abatimento (se o valor recebido for maior)
-            $excedente = $valor_recebido - $valor_original;
-            
-            if ($excedente > 0) {
+            // Usar margem de 0.001 para evitar problemas de precisão de float
+            if ($valor_recebido < ($valor_original - 0.001)) {
+                // 1. Pagamento Parcial: Parcela continua pendente com valor reduzido
+                $novo_valor = round($valor_original - $valor_recebido, 2);
+                $pago_acumulado = round((float)$parcela['valor_pago'] + $valor_recebido, 2);
+                $sqlUp = "UPDATE parcelas_venda SET valor = ?, valor_pago = ? WHERE id = ?";
+                $this->db->prepare($sqlUp)->execute([$novo_valor, $pago_acumulado, $parcela_id]);
+                
+                // Finaliza por aqui sem marcar como pago e sem abatimento
+                $this->db->commit();
+                return true;
+            } else {
+                // 2. Pagamento Integral ou Excedente: Parcela marcada como paga
+                // Importante: somamos apenas o valor necessário para quitar o saldo atual (valor_original)
+                // O excesso será contabilizado nas parcelas abatidas no loop abaixo.
+                $pago_acumulado = round((float)$parcela['valor_pago'] + $valor_original, 2);
+                $sqlUp = "UPDATE parcelas_venda SET status = 'pago', valor = 0, data_pagamento = ?, valor_pago = ? WHERE id = ?";
+                $this->db->prepare($sqlUp)->execute([$data_pagamento, $pago_acumulado, $parcela_id]);
+                
+                // 3. Lógica de Abatimento (se houver excedente)
+                $excedente = round($valor_recebido - $valor_original, 2);
+                
+                if ($excedente > 0) {
                 // Abater das últimas parcelas pendentes (ordem decrescente)
                 while ($excedente > 0.01) { // Usando 0.01 para evitar problemas de precisão de float
                     $sqlLast = "SELECT * FROM parcelas_venda 
@@ -171,17 +190,19 @@ class Venda extends Model {
                     
                     if (!$last) break; // Não há mais parcelas pendentes
                     
-                    if ($last['valor'] > $excedente) {
+                    if ($last['valor'] > ($excedente + 0.001)) {
                         // Abate parcial da última
-                        $novo_valor = $last['valor'] - $excedente;
-                        $sqlAbate = "UPDATE parcelas_venda SET valor = ? WHERE id = ?";
-                        $this->db->prepare($sqlAbate)->execute([$novo_valor, $last['id']]);
+                        $novo_valor = round((float)$last['valor'] - $excedente, 2);
+                        $pago_acumulado = round((float)$last['valor_pago'] + $excedente, 2);
+                        $sqlAbate = "UPDATE parcelas_venda SET valor = ?, valor_pago = ? WHERE id = ?";
+                        $this->db->prepare($sqlAbate)->execute([$novo_valor, $pago_acumulado, $last['id']]);
                         $excedente = 0;
                     } else {
                         // Quita a última integralmente e continua com o que sobrou
-                        $excedente -= $last['valor'];
-                        $sqlQuita = "UPDATE parcelas_venda SET valor = 0, status = 'pago', data_pagamento = ? WHERE id = ?";
-                        $this->db->prepare($sqlQuita)->execute([$data_pagamento, $last['id']]);
+                        $excedente = round($excedente - (float)$last['valor'], 2);
+                        $pago_acumulado = round((float)$last['valor_pago'] + (float)$last['valor'], 2);
+                        $sqlQuita = "UPDATE parcelas_venda SET valor = 0, status = 'pago', data_pagamento = ?, valor_pago = ? WHERE id = ?";
+                        $this->db->prepare($sqlQuita)->execute([$data_pagamento, $pago_acumulado, $last['id']]);
                     }
                 }
             }
@@ -198,7 +219,8 @@ class Venda extends Model {
             
             $this->db->commit();
             return true;
-        } catch (\Exception $e) {
+        }
+    } catch (\Exception $e) {
             $this->db->rollBack();
             throw $e;
         }

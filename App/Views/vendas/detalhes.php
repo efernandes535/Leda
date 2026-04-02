@@ -77,11 +77,15 @@
                                     <td><?= $p['numero_parcela'] ?>ª Parcela</td>
                                     <td><?= date('d/m/Y', strtotime($p['data_vencimento'])) ?></td>
                                     <td>R$ <?= number_format($p['valor'], 2, ',', '.') ?></td>
-                                    <td class="text-success"><?= $p['status'] === 'pago' ? 'R$ ' . number_format($p['valor_pago'], 2, ',', '.') : '-' ?></td>
+                                    <td class="text-success"><?= ($p['valor_pago'] > 0) ? 'R$ ' . number_format($p['valor_pago'], 2, ',', '.') : '-' ?></td>
                                     <td>
-                                        <span class="badge bg-<?= $p['status'] === 'pago' ? 'success' : 'warning' ?>">
-                                            <?= ucfirst($p['status']) ?>
-                                        </span>
+                                        <?php if ($p['status'] === 'pago' || $p['valor'] <= 0.001): ?>
+                                            <span class="badge bg-success">Pago</span>
+                                        <?php elseif ($p['valor_pago'] > 0): ?>
+                                            <span class="badge bg-info">Parcial</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning">Pendente</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <?php if ($p['status'] === 'pendente'): ?>
