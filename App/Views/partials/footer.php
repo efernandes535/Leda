@@ -1,7 +1,7 @@
 </div> <!-- Fim do container -->
 
 <footer class="footer mt-5 py-3 bg-white border-top">
-    <div class="container text-center">
+    <div class="container-fluid px-4 text-center">
         <span class="text-muted">© <?= date('Y') ?> Sistema Leda - Gestão de Estoque</span>
     </div>
 </footer>

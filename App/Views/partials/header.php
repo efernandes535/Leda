@@ -12,7 +12,7 @@
 <body class="bg-light">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container">
+    <div class="container-fluid px-4">
         <a class="navbar-brand" href="<?= URL_BASE ?>"><?= APP_NAME ?></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -55,7 +55,7 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="container-fluid px-4">
     <?php if (isset($_SESSION['success'])): ?>
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i> <?= $_SESSION['success'] ?>
