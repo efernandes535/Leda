@@ -87,7 +87,7 @@
                                                 data-lotes='<?= json_encode($p['lotes']) ?>'
                                                 data-estoque="<?= $p['quantidade'] ?>"
                                                 <?= $itemVal['produto_id'] == $p['id'] ? 'selected' : '' ?>>
-                                            <?= $p['nome'] ?> (Qtd: <?= $p['quantidade'] ?>)
+                                            <?= $p['sku'] ? '['.$p['sku'].'] ' : '' ?><?= $p['nome'] ?> (Qtd: <?= $p['quantidade'] ?>)
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -148,6 +148,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnAdd = document.getElementById('add-item');
     const totalSpan = document.getElementById('valor-total');
     const btnSubmit = document.querySelector('button[type="submit"]');
+
+    // Template para novas linhas (antes de inicializar TomSelect)
+    const firstRow = document.querySelector('.item-row');
+    const rowTemplate = firstRow.cloneNode(true);
+    
+    function initProductSelect(element) {
+        if (element.tomselect) return;
+        new TomSelect(element, {
+            create: false,
+            sortField: { field: "text", direction: "asc" },
+            placeholder: "Selecione o Perfume...",
+            allowEmptyOption: true,
+            maxOptions: 1000
+        });
+    }
 
     function calculateTotal() {
         let total = 0;
@@ -243,8 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnAdd.addEventListener('click', function() {
-        const firstRow = document.querySelector('.item-row');
-        const row = firstRow.cloneNode(true);
+        const row = rowTemplate.cloneNode(true);
         row.querySelectorAll('input').forEach(input => input.value = '');
         row.querySelectorAll('select').forEach(select => {
             select.selectedIndex = 0;
@@ -256,6 +270,10 @@ document.addEventListener('DOMContentLoaded', function() {
         row.querySelector('.stock-check-label').textContent = '';
         row.querySelector('.qtd-input').classList.remove('is-invalid');
         container.appendChild(row);
+        
+        // Inicializar TomSelect na nova linha
+        initProductSelect(row.querySelector('.produto-select'));
+        
         validateAll();
     });
 
@@ -323,6 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar linhas existentes
     document.querySelectorAll('.produto-select').forEach(select => {
+        initProductSelect(select);
         if (select.value) {
             updateLoteSelect(select);
         }

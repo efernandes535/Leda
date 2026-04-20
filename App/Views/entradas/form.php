@@ -12,7 +12,7 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Produto</label>
-                    <select name="produto_id" class="form-select" required>
+                    <select name="produto_id" id="produto_id" class="form-select" required>
                         <option value="">Selecione o produto...</option>
                         <?php foreach ($produtos as $p): ?>
                             <option value="<?= $p['id'] ?>">
@@ -51,5 +51,19 @@
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new TomSelect('#produto_id', {
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc"
+        },
+        placeholder: "Digite o SKU ou Nome do produto...",
+        allowEmptyOption: true
+    });
+});
+</script>
 
 <?php include '../App/Views/partials/footer.php'; ?>
