@@ -49,7 +49,9 @@
 
     <div class="receipt-container">
         <div class="header">
-            <div class="logo">LEDA</div>
+            <div class="logo">
+                <img src="<?= URL_BASE ?>/public/img/logo.png" alt="Leda Logo" style="height: 100px;">
+            </div>
             <div class="receipt-title">
                 <h1>Recibo de Venda</h1>
                 <p>#<?= str_pad($venda['id'], 5, '0', STR_PAD_LEFT) ?></p>

@@ -13,7 +13,10 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid px-4">
-        <a class="navbar-brand" href="<?= URL_BASE ?>"><?= APP_NAME ?></a>
+        <a class="navbar-brand d-flex align-items-center" href="<?= URL_BASE ?>">
+            <img src="<?= URL_BASE ?>/public/img/logo.png" alt="Logo" height="30" class="me-2 rounded">
+            <?= APP_NAME ?>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
