@@ -43,11 +43,25 @@ class EstoqueController extends Controller {
 
     public function salvar() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            $sku = trim($_POST['sku'] ?? '');
+
+            // Verificar se SKU já existe (evitar duplicidade)
+            if (!empty($sku) && $this->produtoModel->skuExists($sku, $id)) {
+                $_SESSION['error'] = "Já existe um produto cadastrado com a Referência/SKU: {$sku}";
+                if ($id) {
+                    $this->redirect("/estoque/editar/{$id}");
+                } else {
+                    $this->redirect('/estoque/novo');
+                }
+                return;
+            }
+
             $data = [
                 'categoria_id' => $_POST['categoria_id'] ?: null,
-                'sku' => $_POST['sku'] ?? '',
-                'nome' => $_POST['nome'],
-                'descricao' => $_POST['descricao'],
+                'sku' => $sku,
+                'nome' => trim($_POST['nome']),
+                'descricao' => trim($_POST['descricao']),
                 'preco_compra' => $_POST['preco_compra'],
                 'preco_venda' => $_POST['preco_venda'],
                 'quantidade' => $_POST['quantidade'],
@@ -55,12 +69,14 @@ class EstoqueController extends Controller {
                 'ativo' => isset($_POST['ativo']) ? (int)$_POST['ativo'] : 1
             ];
 
-            if (isset($_POST['id']) && !empty($_POST['id'])) {
-                if ($this->produtoModel->update($_POST['id'], $data)) {
+            if ($id && !empty($id)) {
+                if ($this->produtoModel->update($id, $data)) {
+                    $_SESSION['success'] = "Produto atualizado com sucesso!";
                     $this->redirect('/estoque');
                 }
             } else {
                 if ($this->produtoModel->create($data)) {
+                    $_SESSION['success'] = "Produto cadastrado com sucesso!";
                     $this->redirect('/estoque');
                 }
             }

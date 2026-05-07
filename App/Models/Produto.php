@@ -67,12 +67,28 @@ class Produto extends Model {
     }
 
     public function getLotesDisponiveis($id) {
-        $sql = "SELECT lote, data_validade FROM entradas_estoque 
+        $sql = "SELECT lote, data_validade FROM itens_entrada 
                 WHERE produto_id = ? AND lote IS NOT NULL AND lote != '' 
                 GROUP BY lote, data_validade 
                 ORDER BY data_validade ASC, lote ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetchAll();
+    }
+
+    public function skuExists($sku, $excludeId = null) {
+        if (empty(trim($sku))) return false;
+        
+        $sql = "SELECT id FROM produtos WHERE sku = :sku";
+        $params = [':sku' => trim($sku)];
+        
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch() !== false;
     }
 }

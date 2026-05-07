@@ -2,11 +2,11 @@
 
 <div class="row align-items-center mb-4">
     <div class="col">
-        <h1>Histórico de Entradas de Estoque</h1>
+        <h1>Histórico de Notas de Entrada</h1>
     </div>
     <div class="col-auto">
         <a href="<?= URL_BASE ?>/entradas/novo" class="btn btn-primary text-white">
-            <i class="bi bi-plus-lg"></i> Registrar Compra
+            <i class="bi bi-plus-lg"></i> Registrar Nota Fiscal
         </a>
     </div>
 </div>
@@ -14,35 +14,37 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Data</th>
-                        <th>Ref.</th>
-                        <th>Produto</th>
-                        <th>Lote</th>
-                        <th>Validade</th>
-                        <th>Qtd.</th>
-                        <th>Custo Unit.</th>
-                        <th>Total</th>
+                        <th>Nº Lançamento</th>
+                        <th>Data Registro</th>
+                        <th>Data Emissão</th>
+                        <th>Nº Nota</th>
+                        <th>Fornecedor</th>
+                        <th>Valor Total</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($entradas)): ?>
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">Nenhuma entrada registrada.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">Nenhuma nota de entrada registrada.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($entradas as $e): ?>
                             <tr>
-                                <td><?= date('d/m/Y H:i', strtotime($e['data_entrada'])) ?></td>
-                                <td><small class="text-muted"><?= $e['produto_sku'] ?: '-' ?></small></td>
-                                <td><?= $e['produto_nome'] ?></td>
-                                <td><?= $e['lote'] ?: '-' ?></td>
-                                <td><?= $e['data_validade'] ? date('d/m/Y', strtotime($e['data_validade'])) : '-' ?></td>
-                                <td><?= $e['quantidade'] ?></td>
-                                <td>R$ <?= number_format($e['preco_compra'], 2, ',', '.') ?></td>
-                                <td><strong>R$ <?= number_format($e['quantidade'] * $e['preco_compra'], 2, ',', '.') ?></strong></td>
+                                <td>#<?= str_pad($e['id'], 5, '0', STR_PAD_LEFT) ?></td>
+                                <td><?= date('d/m/Y H:i', strtotime($e['data_registro'])) ?></td>
+                                <td><?= $e['data_emissao'] ? date('d/m/Y', strtotime($e['data_emissao'])) : '-' ?></td>
+                                <td><span class="badge bg-secondary"><?= $e['numero_nota'] ?: 'S/N' ?></span></td>
+                                <td><?= $e['fornecedor'] ?: 'Não Informado' ?></td>
+                                <td><strong>R$ <?= number_format($e['valor_total'], 2, ',', '.') ?></strong></td>
+                                <td>
+                                    <a href="<?= URL_BASE ?>/entradas/detalhes/<?= $e['id'] ?>" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Ver Detalhes
+                                    </a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
