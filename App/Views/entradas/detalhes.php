@@ -67,13 +67,39 @@
                                                     <i class="bi bi-arrow-counterclockwise"></i> Estornar
                                                 </a>
                                             <?php else: ?>
-                                                <form action="<?= URL_BASE ?>/entradas/baixarParcela/<?= $p['id'] ?>" method="POST" class="d-inline">
-                                                    <span class="badge bg-warning text-dark me-2">Pendente</span>
-                                                    <input type="date" name="data_pagamento" value="<?= date('Y-m-d') ?>" class="form-control form-control-sm d-inline-block w-auto" title="Data de Pagamento" required>
-                                                    <button type="submit" class="btn btn-sm btn-success ms-1" title="Marcar como Pago">
-                                                        <i class="bi bi-check-lg"></i> Baixar
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-success ms-1" data-bs-toggle="modal" data-bs-target="#modalPagarDetalhe<?= $p['id'] ?>" title="Marcar como Pago">
+                                                    <i class="bi bi-check-lg"></i> Baixar
+                                                </button>
+                                                
+                                                <div class="modal fade" id="modalPagarDetalhe<?= $p['id'] ?>" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content text-start border-success border-top border-4">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title fw-bold text-success">Confirmar Pagamento</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <form action="<?= URL_BASE ?>/entradas/baixarParcela/<?= $p['id'] ?>" method="POST">
+                                                                <div class="modal-body">
+                                                                    <p>Confirmando o pagamento da <strong><?= $p['numero_parcela'] ?>ª Parcela</strong> no valor de <strong>R$ <?= number_format($p['valor'], 2, ',', '.') ?></strong>.</p>
+                                                                    
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Data do Pagamento</label>
+                                                                        <input type="date" name="data_pagamento" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                                                                    </div>
+                                                                    
+                                                                    <div class="mb-1">
+                                                                        <label class="form-label">Valor Pago (R$)</label>
+                                                                        <input type="number" step="0.01" class="form-control" value="<?= $p['valor'] ?>" readonly>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

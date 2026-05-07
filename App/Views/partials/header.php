@@ -28,8 +28,14 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= URL_BASE ?>/estoque">Estoque</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="<?= URL_BASE ?>/entradas">Entradas</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="entradasDropdown" role="button" data-bs-toggle="dropdown">
+                        Entradas
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?= URL_BASE ?>/entradas">Lista de Entradas</a></li>
+                        <li><a class="dropdown-item" href="<?= URL_BASE ?>/entradas/novo">Nova Entrada</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= URL_BASE ?>/categorias">Categorias</a>
@@ -42,6 +48,17 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= URL_BASE ?>/orcamentos">Orçamentos</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-success" href="#" id="financeiroDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-currency-dollar"></i> Financeiro
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?= URL_BASE ?>/financeiro"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?= URL_BASE ?>/financeiro/receber"><i class="bi bi-box-arrow-in-right text-success"></i> Contas a Receber</a></li>
+                        <li><a class="dropdown-item" href="<?= URL_BASE ?>/financeiro/pagar"><i class="bi bi-box-arrow-up-right text-danger"></i> Contas a Pagar</a></li>
+                    </ul>
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
