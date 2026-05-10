@@ -45,7 +45,7 @@
                                 <?php foreach ($categorias as $c): ?>
                                     <tr>
                                         <td><?= $c['id'] ?></td>
-                                        <td><?= $c['nome'] ?></td>
+                                        <td class="text-uppercase"><?= $c['nome'] ?></td>
                                         <td class="text-end">
                                             <a href="<?= URL_BASE ?>/categorias/excluir/<?= $c['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza?')">
                                                 <i class="bi bi-trash"></i>

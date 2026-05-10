@@ -31,7 +31,7 @@
                     <?php else: ?>
                         <?php foreach ($clientes as $c): ?>
                             <tr>
-                                <td><strong><?= $c['nome'] ?></strong></td>
+                                <td class="text-uppercase"><strong><?= $c['nome'] ?></strong></td>
                                 <td>
                                     <small class="d-block text-muted"><?= $c['email'] ?></small>
                                     <small class="d-block"><?= $c['telefone'] ?></small>

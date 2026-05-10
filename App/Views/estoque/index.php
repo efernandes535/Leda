@@ -38,8 +38,8 @@
                             <tr onclick="abrirModalDetalhes(<?= $p['id'] ?>)" style="cursor: pointer;" class="produto-row">
                                 <td><?= $p['id'] ?></td>
                                 <td><small class="text-muted"><?= $p['sku'] ?: '-' ?></small></td>
-                                <td><?= $p['nome'] ?></td>
-                                <td><?= $p['categoria_nome'] ?? 'Sem categoria' ?></td>
+                                <td class="text-uppercase"><?= $p['nome'] ?></td>
+                                <td class="text-uppercase"><?= $p['categoria_nome'] ?? 'Sem categoria' ?></td>
                                 <td>R$ <?= number_format($p['preco_venda'], 2, ',', '.') ?></td>
                                 <td><?= $p['quantidade'] ?></td>
                                 <td><?= $p['estoque_minimo'] ?></td>
@@ -84,9 +84,9 @@
       <div class="modal-body">
         <div class="row mb-3">
           <div class="col-md-6">
-            <p><strong>Nome:</strong> <span id="detalheNome"></span></p>
+            <p><strong>Nome:</strong> <span id="detalheNome" class="text-uppercase"></span></p>
             <p><strong>Referência/SKU:</strong> <span id="detalheSku"></span></p>
-            <p><strong>Categoria:</strong> <span id="detalheCategoria"></span></p>
+            <p><strong>Categoria:</strong> <span id="detalheCategoria" class="text-uppercase"></span></p>
             <p><strong>Descrição:</strong> <span id="detalheDescricao"></span></p>
           </div>
           <div class="col-md-6">

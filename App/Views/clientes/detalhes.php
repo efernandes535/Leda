@@ -8,7 +8,7 @@
                 <li class="breadcrumb-item active">Perfil do Cliente</li>
             </ol>
         </nav>
-        <h1><?= $cliente['nome'] ?></h1>
+        <h1 class="text-uppercase"><?= $cliente['nome'] ?></h1>
     </div>
 </div>
 
