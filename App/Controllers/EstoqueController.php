@@ -23,6 +23,23 @@ class EstoqueController extends Controller {
         ]);
     }
 
+    public function detalhes($id) {
+        $produto = $this->produtoModel->findWithCategoria($id);
+        if (!$produto) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Produto não encontrado']);
+            return;
+        }
+
+        $lotes = $this->produtoModel->getLotesComQuantidadeDisponivel($id);
+        
+        header('Content-Type: application/json');
+        echo json_encode([
+            'produto' => $produto,
+            'lotes' => $lotes
+        ]);
+    }
+
     public function novo() {
         $categorias = $this->categoriaModel->all();
         $this->view('estoque/form', [

@@ -44,6 +44,16 @@ class Produto extends Model {
         return $this->db->query($sql)->fetchAll();
     }
 
+    public function findWithCategoria($id) {
+        $sql = "SELECT p.*, c.nome as categoria_nome 
+                FROM produtos p 
+                LEFT JOIN categorias c ON p.categoria_id = c.id
+                WHERE p.id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch();
+    }
+
     public function inativar($id) {
         $sql = "UPDATE produtos SET ativo = 0 WHERE id = ?";
         return $this->db->prepare($sql)->execute([$id]);
@@ -73,6 +83,28 @@ class Produto extends Model {
                 ORDER BY data_validade ASC, lote ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
+        return $stmt->fetchAll();
+    }
+
+    public function getLotesComQuantidadeDisponivel($id) {
+        $sql = "SELECT 
+                    lote, 
+                    data_validade, 
+                    SUM(qtd_entrada) - SUM(qtd_saida) as quantidade_disponivel
+                FROM (
+                    SELECT lote, data_validade, quantidade as qtd_entrada, 0 as qtd_saida 
+                    FROM itens_entrada 
+                    WHERE produto_id = :id1 AND lote IS NOT NULL AND lote != ''
+                    UNION ALL
+                    SELECT lote, data_validade, 0 as qtd_entrada, quantidade as qtd_saida 
+                    FROM itens_venda 
+                    WHERE produto_id = :id2 AND lote IS NOT NULL AND lote != ''
+                ) as lotes_movimentacao
+                GROUP BY lote, data_validade
+                HAVING quantidade_disponivel > 0
+                ORDER BY data_validade ASC, lote ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id1' => $id, 'id2' => $id]);
         return $stmt->fetchAll();
     }
 
